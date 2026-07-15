@@ -1,6 +1,6 @@
-import { eq } from "drizzle-orm";
+import { eq, desc, and, isNull } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users } from "../drizzle/schema";
+import { InsertUser, users, posts, comments, tags, categories, postTags, galleries, images } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -89,4 +89,243 @@ export async function getUserByOpenId(openId: string) {
   return result.length > 0 ? result[0] : undefined;
 }
 
-// TODO: add feature queries here as your schema grows.
+export async function getUserById(id: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+
+  const result = await db.select().from(users).where(eq(users.id, id)).limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}
+
+// ============ 文章相关查询 ============
+
+export async function getPublishedPosts(limit: number = 10, offset: number = 0) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  return db
+    .select()
+    .from(posts)
+    .where(eq(posts.status, 'published'))
+    .orderBy(desc(posts.publishedAt))
+    .limit(limit)
+    .offset(offset);
+}
+
+export async function getPostBySlug(slug: string) {
+  const db = await getDb();
+  if (!db) return undefined;
+  
+  const result = await db
+    .select()
+    .from(posts)
+    .where(eq(posts.slug, slug))
+    .limit(1);
+  
+  return result.length > 0 ? result[0] : undefined;
+}
+
+export async function getPostById(id: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+  
+  const result = await db
+    .select()
+    .from(posts)
+    .where(eq(posts.id, id))
+    .limit(1);
+  
+  return result.length > 0 ? result[0] : undefined;
+}
+
+export async function getUserPosts(userId: number, limit: number = 10, offset: number = 0) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  return db
+    .select()
+    .from(posts)
+    .where(eq(posts.authorId, userId))
+    .orderBy(desc(posts.createdAt))
+    .limit(limit)
+    .offset(offset);
+}
+
+export async function getPostsByCategory(categoryId: number, limit: number = 10, offset: number = 0) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  return db
+    .select()
+    .from(posts)
+    .where(and(eq(posts.categoryId, categoryId), eq(posts.status, 'published')))
+    .orderBy(desc(posts.publishedAt))
+    .limit(limit)
+    .offset(offset);
+}
+
+export async function incrementPostViewCount(postId: number) {
+  const db = await getDb();
+  if (!db) return;
+  
+  const post = await db.select().from(posts).where(eq(posts.id, postId)).limit(1);
+  if (post.length > 0) {
+    await db.update(posts).set({ viewCount: (post[0].viewCount || 0) + 1 }).where(eq(posts.id, postId));
+  }
+}
+
+export async function getPostCount(status: string = 'published') {
+  const db = await getDb();
+  if (!db) return 0;
+  
+  const result = await db
+    .select()
+    .from(posts)
+    .where(eq(posts.status, status as any));
+  
+  return result.length;
+}
+
+// ============ 标签相关查询 ============
+
+export async function getAllTags() {
+  const db = await getDb();
+  if (!db) return [];
+  
+  return db.select().from(tags).orderBy(tags.name);
+}
+
+export async function getTagBySlug(slug: string) {
+  const db = await getDb();
+  if (!db) return undefined;
+  
+  const result = await db.select().from(tags).where(eq(tags.slug, slug)).limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}
+
+export async function getTagById(id: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+  
+  const result = await db.select().from(tags).where(eq(tags.id, id)).limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}
+
+export async function getPostsByTag(tagId: number, limit: number = 10, offset: number = 0) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  return db
+    .select({ post: posts })
+    .from(postTags)
+    .innerJoin(posts, eq(postTags.postId, posts.id))
+    .where(and(eq(postTags.tagId, tagId), eq(posts.status, 'published')))
+    .orderBy(desc(posts.publishedAt))
+    .limit(limit)
+    .offset(offset);
+}
+
+// ============ 分类相关查询 ============
+
+export async function getAllCategories() {
+  const db = await getDb();
+  if (!db) return [];
+  
+  return db.select().from(categories).orderBy(categories.name);
+}
+
+export async function getCategoryBySlug(slug: string) {
+  const db = await getDb();
+  if (!db) return undefined;
+  
+  const result = await db.select().from(categories).where(eq(categories.slug, slug)).limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}
+
+export async function getCategoryById(id: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+  
+  const result = await db.select().from(categories).where(eq(categories.id, id)).limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}
+
+// ============ 评论相关查询 ============
+
+export async function getPostComments(postId: number, limit: number = 20, offset: number = 0) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  return db
+    .select()
+    .from(comments)
+    .where(and(eq(comments.postId, postId), eq(comments.status, 'approved'), isNull(comments.parentCommentId)))
+    .orderBy(desc(comments.createdAt))
+    .limit(limit)
+    .offset(offset);
+}
+
+export async function getCommentReplies(parentCommentId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  return db
+    .select()
+    .from(comments)
+    .where(and(eq(comments.parentCommentId, parentCommentId), eq(comments.status, 'approved')))
+    .orderBy(comments.createdAt);
+}
+
+export async function getPendingComments(limit: number = 20, offset: number = 0) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  return db
+    .select()
+    .from(comments)
+    .where(eq(comments.status, 'pending'))
+    .orderBy(desc(comments.createdAt))
+    .limit(limit)
+    .offset(offset);
+}
+
+export async function getCommentById(id: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+  
+  const result = await db.select().from(comments).where(eq(comments.id, id)).limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}
+
+// ============ 图片集相关查询 ============
+
+export async function getAllGalleries(limit: number = 10, offset: number = 0) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  return db
+    .select()
+    .from(galleries)
+    .orderBy(desc(galleries.createdAt))
+    .limit(limit)
+    .offset(offset);
+}
+
+export async function getGalleryById(id: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+  
+  const result = await db.select().from(galleries).where(eq(galleries.id, id)).limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}
+
+export async function getGalleryImages(galleryId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  return db
+    .select()
+    .from(images)
+    .where(eq(images.galleryId, galleryId))
+    .orderBy(images.order);
+}

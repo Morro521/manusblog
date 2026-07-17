@@ -2,9 +2,9 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { useState } from "react";
 import { trpc } from "@/lib/trpc";
+import MarkdownEditor from "@/components/MarkdownEditor";
 
 export default function CreatePost() {
   const { isAuthenticated } = useAuth();
@@ -41,11 +41,10 @@ export default function CreatePost() {
         className="bg-slate-800 border-purple-500/20"
       />
       
-      <Textarea
-        placeholder="文章内容 (支持 Markdown)"
+      <MarkdownEditor
         value={content}
-        onChange={(e) => setContent(e.target.value)}
-        className="bg-slate-800 border-purple-500/20 min-h-96"
+        onChange={setContent}
+        placeholder="输入文章内容 (支持 Markdown)"
       />
       
       <Button

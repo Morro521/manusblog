@@ -1,0 +1,44 @@
+{
+  "build_command": "pnpm run build",
+  "capabilities": [
+    "db",
+    "server",
+    "user"
+  ],
+  "dev_command": "pnpm run dev",
+  "env_vars": {
+    "DATABASE_URL": "mysql://3EvZRFZPCbMqfJj.root:9HE2k3ZaSO0jS0wg0qwP@gateway03.us-east-1.prod.aws.tidbcloud.com:4000/7ty5cdBcsXZQGd6tdTYy3Z?ssl={\"rejectUnauthorized\":true}"
+  },
+  "experiments": [
+    "no_db_push"
+  ],
+  "git_remote": {
+    "repo_url": "s3://vida-prod-gitrepo/webdev-git/310519663392644957/7ty5cdBcsXZQGd6tdTYy3Z",
+    "access_key_id": "ASIAZV3A2ECZA2QHJYJW",
+    "secret_access_key": "wHQM1d27LfXuVEpa8R5tJ7MnWPmaAD2VoHQsH+Kq",
+    "session_token": "IQoJb3JpZ2luX2VjEG8aCXVzLWVhc3QtMSJHMEUCIQCE1IbgO9V2LWN2PyVrirHk0CcXAwSwRk07FrV8OV124wIgedpoufEOMe6hNzBD/EUxXXqjRfo6+8o2nBORfE1xmCsq9gMINxAEGgw2NjUzODYwOTg4NjYiDAkHFta5aGusb4YNiyrTA8rzkZjAm8UPBsOZXAY9W7P5JAh61ulu5nWhpFb+ym/4hPKBYbxufp0rHakvyROAy6K7gdKN18yKJUXlSYyOicuqo68KNMwuiOSDs65iKSsMYVph/KlSiOV0dEbH2hFiU/TlLHDW3OPBPrUXS9tXAosKkO91yX6+4ZXF3pCM1hkAfwtcQHBFhTRBeouxeMzgJgGHr5F9gB4pMvkf9/CBhPBTNzOsviHACHyy9X472jVQAsAQ6KTVefdI7imKp/+cOD4F/mO+qc9x4AUt7FKQ+tWn5GH5MEL9acy00oYPhKrUNqHJIYmnHGdUbJfkFC+4RpwImanvUh1sF1aA4BQuK92w4Fs9oQcWgw7mu/vKBQ0s/BBXXEavxO960vOtFIp8w2hI25bqwg5Nmmc3L2YbYVk2ZjAWU4/2u6hMuOisjLNEIwsEnYvzIvxbWj8LHdwoKN9NjampOb1H5iGe+USMuHVFPXY6ZKQvDF2SExxXuAyQfuUSnfaiqKKCBqxsekJpal/O4lObF+rEjN4chJUwXD1/BZrHpf9apsZo7cw2L6fPsOQ7vgpd2WE2RMc6RJZFlqEfPVx/gpFhij0++wWyyTrdxBcGbtKZWlyD0fkJVgl4GEV4MKTP0NMGOp0Bx4PGF3LDtwtHbnCLx55ui/h6Nab7QeUIVFmis9wAAVDSntBwq/Q6I8WUqaRhVY4IuOsApkZaAsmFidwuXpRTxEHB/Mj3a4xyWSGjVOA7P5uhQqOt+nXNGqq991u6zs89N+06TfsqrkDoJVmhHH0q1fAO3mOqD2F9jJk4C9lVKYUI/I7z3JuUUm6Wt8GpFaAFpVtGbW9D4uGQHYWRuA==",
+    "expiration": "2026-08-06T18:20:20.000Z",
+    "backend": "GIT_BACKEND_S3"
+  },
+  "name": "MorroBlog",
+  "path": "/home/ubuntu/MorroBlog",
+  "port": 3000,
+  "secrets": {
+    "BUILT_IN_FORGE_API_KEY": "dndY2egKSUt4eauNYJNH53",
+    "BUILT_IN_FORGE_API_URL": "https://forge.manus.ai",
+    "JWT_SECRET": "DoyVX2rch7rRYUsHSx3Udz",
+    "OAUTH_SERVER_URL": "https://api.manus.im",
+    "OWNER_NAME": "M orro",
+    "OWNER_OPEN_ID": "hufj7sEce5L99KRmHc8iVD",
+    "VITE_ANALYTICS_ENDPOINT": "https://manus-analytics.com",
+    "VITE_ANALYTICS_WEBSITE_ID": "8c84e3c2-070a-4aed-bdb0-82ab337698a5",
+    "VITE_APP_ID": "7ty5cdBcsXZQGd6tdTYy3Z",
+    "VITE_APP_LOGO": "https://files.manuscdn.com/user_upload_by_module/web_dev_logo/310519663392644957/YVZsbYlMlnwqlfGh.png",
+    "VITE_APP_TITLE": "MorroBlog - 二次元/极客风格博客",
+    "VITE_FRONTEND_FORGE_API_KEY": "gCfCZU5WhShvGYA7oYRP5k",
+    "VITE_FRONTEND_FORGE_API_URL": "https://forge.manus.ai",
+    "VITE_OAUTH_PORTAL_URL": "https://manus.im"
+  },
+  "template_id": "web-db-user",
+  "test_command": "pnpm test"
+}

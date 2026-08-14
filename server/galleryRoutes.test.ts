@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { TrpcContext } from "./_core/context";
 
 const dbMocks = vi.hoisted(() => ({
+  getAllGalleries: vi.fn(),
   getGalleryById: vi.fn(),
   getGalleryImages: vi.fn(),
 }));
@@ -19,6 +20,13 @@ const userContext = {
 
 describe("gallery routes", () => {
   beforeEach(() => vi.clearAllMocks());
+
+  it("returns an honest empty list for visitors when no gallery exists", async () => {
+    dbMocks.getAllGalleries.mockResolvedValue([]);
+
+    await expect(appRouter.createCaller(publicContext).galleries.list({ page: 1, limit: 20 })).resolves.toEqual([]);
+    expect(dbMocks.getAllGalleries).toHaveBeenCalledWith(20, 0);
+  });
 
   it("returns a public gallery with its real ordered image records", async () => {
     const gallery = { id: 4, title: "Tokyo at night", description: "Field photographs", createdAt: new Date(), updatedAt: new Date() };

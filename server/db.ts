@@ -180,6 +180,26 @@ export async function getPostDetailBySlug(slug: string) {
   return { ...post, category, tags: tagRows };
 }
 
+export async function getPostDetailById(id: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+
+  const result = await db.select().from(posts).where(eq(posts.id, id)).limit(1);
+  const post = result[0];
+  if (!post) return undefined;
+
+  const [category, tagRows] = await Promise.all([
+    post.categoryId ? getCategoryById(post.categoryId) : Promise.resolve(undefined),
+    db
+      .select({ id: tags.id, name: tags.name, slug: tags.slug, description: tags.description })
+      .from(postTags)
+      .innerJoin(tags, eq(postTags.tagId, tags.id))
+      .where(eq(postTags.postId, post.id)),
+  ]);
+
+  return { ...post, category, tags: tagRows };
+}
+
 export async function getPostById(id: number) {
   const db = await getDb();
   if (!db) return undefined;

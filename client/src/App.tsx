@@ -23,6 +23,7 @@ function Router() {
       <Route path="/posts" component={PostsList} />
       <Route path="/posts/:slug" component={PostDetail} />
       <Route path="/create" component={CreatePost} />
+      <Route path="/edit/:id" component={CreatePost} />
       <Route path="/archives" component={Archives} />
       <Route path="/tags" component={TagsPage} />
       <Route path="/gallery/:id" component={GalleryDetail} />

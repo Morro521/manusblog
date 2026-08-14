@@ -60,6 +60,17 @@ export const appRouter = router({
         return post;
       }),
 
+    getForEdit: protectedProcedure
+      .input(z.object({ id: z.number().int().positive() }))
+      .query(async ({ input, ctx }) => {
+        const post = await db.getPostDetailById(input.id);
+        if (!post) throw new TRPCError({ code: "NOT_FOUND", message: "文章不存在" });
+        if (post.authorId !== ctx.user.id && ctx.user.role !== "admin") {
+          throw new TRPCError({ code: "FORBIDDEN", message: "无权编辑此文章" });
+        }
+        return post;
+      }),
+
     create: protectedProcedure
       .input(z.object({
         title: z.string().min(1),
@@ -112,10 +123,11 @@ export const appRouter = router({
       .input(z.object({
         id: z.number(),
         title: z.string().optional(),
+        slug: z.string().min(1).optional(),
         content: z.string().optional(),
-        excerpt: z.string().optional(),
-        coverImage: z.string().optional(),
-        categoryId: z.number().optional(),
+        excerpt: z.string().nullable().optional(),
+        coverImage: z.string().nullable().optional(),
+        categoryId: z.number().nullable().optional(),
         tagIds: z.array(z.number().int().positive()).optional(),
         status: z.enum(['draft', 'published', 'archived']).optional(),
       }))

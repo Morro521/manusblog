@@ -8,6 +8,7 @@ import { TRPCError } from "@trpc/server";
 import { getDb } from "./db";
 import { posts, comments, tags, categories, postTags, galleries, images, InsertPost, InsertComment, InsertTag, InsertCategory, InsertImage, InsertGallery } from "../drizzle/schema";
 import { eq, desc, inArray } from "drizzle-orm";
+import { storagePut } from "./storage";
 
 export const appRouter = router({
   system: systemRouter,
@@ -279,6 +280,32 @@ export const appRouter = router({
 
         await dbInstance.delete(comments).where(eq(comments.id, input.id));
         return { success: true };
+      }),
+  }),
+
+  // ============ 图片存储路由 ============
+  media: router({
+    uploadImage: protectedProcedure
+      .input(z.object({
+        fileName: z.string().min(1).max(128),
+        mimeType: z.enum(["image/jpeg", "image/png", "image/webp", "image/gif", "image/avif"]),
+        base64: z.string().min(1).max(8_000_000),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        const normalizedBase64 = input.base64.replace(/^data:image\/[a-zA-Z0-9+.-]+;base64,/, "");
+        const bytes = Buffer.from(normalizedBase64, "base64");
+        const maxBytes = 5 * 1024 * 1024;
+        if (bytes.length === 0 || bytes.length > maxBytes) {
+          throw new TRPCError({ code: "PAYLOAD_TOO_LARGE", message: "图片必须小于 5MB" });
+        }
+
+        const sanitizedName = input.fileName
+          .replace(/[^a-zA-Z0-9._-]/g, "-")
+          .replace(/-+/g, "-")
+          .slice(0, 96) || "image";
+        const objectKey = `blog/${ctx.user.id}/images/${Date.now()}-${crypto.randomUUID()}-${sanitizedName}`;
+        const { key, url } = await storagePut(objectKey, bytes, input.mimeType);
+        return { key, url };
       }),
   }),
 

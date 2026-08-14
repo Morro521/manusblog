@@ -45,7 +45,7 @@ export const appRouter = router({
     getBySlug: publicProcedure
       .input(z.object({ slug: z.string() }))
       .query(async ({ input }) => {
-        const post = await db.getPostBySlug(input.slug);
+        const post = await db.getPostDetailBySlug(input.slug);
         if (!post) {
           throw new TRPCError({ code: "NOT_FOUND", message: "文章不存在" });
         }

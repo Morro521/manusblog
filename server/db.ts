@@ -125,6 +125,30 @@ export async function getPostBySlug(slug: string) {
   return result.length > 0 ? result[0] : undefined;
 }
 
+/**
+ * 获取文章详情及其真实分类、标签关系。
+ * 关联查询与主表查询分离，避免多标签 join 造成文章行重复。
+ */
+export async function getPostDetailBySlug(slug: string) {
+  const db = await getDb();
+  if (!db) return undefined;
+
+  const result = await db.select().from(posts).where(eq(posts.slug, slug)).limit(1);
+  const post = result[0];
+  if (!post) return undefined;
+
+  const [category, tagRows] = await Promise.all([
+    post.categoryId ? getCategoryById(post.categoryId) : Promise.resolve(undefined),
+    db
+      .select({ id: tags.id, name: tags.name, slug: tags.slug, description: tags.description })
+      .from(postTags)
+      .innerJoin(tags, eq(postTags.tagId, tags.id))
+      .where(eq(postTags.postId, post.id)),
+  ]);
+
+  return { ...post, category, tags: tagRows };
+}
+
 export async function getPostById(id: number) {
   const db = await getDb();
   if (!db) return undefined;

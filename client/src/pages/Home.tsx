@@ -1,242 +1,109 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { useLocation } from "wouter";
 import { startLogin } from "@/const";
 import { trpc } from "@/lib/trpc";
-import { Sparkles, BookOpen, MessageCircle, Tag, Image, BarChart3 } from "lucide-react";
+import { ArrowRight, BookOpen, Eye, PenLine } from "lucide-react";
+
+const observatoryCover = "/manus-storage/observatory-night_fc4b375d.jpg";
+const deepFieldCover = "/manus-storage/deep-field_cb6500bf.jpg";
+const cityCover = "/manus-storage/tokyo-night_3d3a06e3.jpeg";
+const sakuraCover = "/manus-storage/anime-sakura_12e0ba1a.jpg";
+
+function coverFor(index: number, post: any) {
+  return post?.coverImage || [deepFieldCover, cityCover, observatoryCover, sakuraCover][index % 4];
+}
 
 export default function Home() {
   const { isAuthenticated } = useAuth();
   const [, navigate] = useLocation();
-  const { data: posts } = trpc.posts.list.useQuery({ page: 1, limit: 3 });
-
-  const features = [
-    {
-      icon: BookOpen,
-      title: "Markdown 编辑",
-      description: "支持完整的 Markdown 语法，代码高亮渲染",
-    },
-    {
-      icon: MessageCircle,
-      title: "嵌套评论",
-      description: "支持楼层式回复，完整的评论审核机制",
-    },
-    {
-      icon: Tag,
-      title: "标签分类",
-      description: "灵活的标签和分类系统，快速筛选文章",
-    },
-    {
-      icon: Image,
-      title: "图片集",
-      description: "独立的图片集展示功能，支持 S3 存储",
-    },
-    {
-      icon: BarChart3,
-      title: "阅读统计",
-      description: "实时统计文章阅读量，了解内容热度",
-    },
-    {
-      icon: Sparkles,
-      title: "宇宙美学",
-      description: "沉浸式设计，樱花粒子动效，极客二次元风格",
-    },
-  ];
+  const { data: posts } = trpc.posts.list.useQuery({ page: 1, limit: 4 });
 
   return (
-    <div className="space-y-20">
-      {/* 英雄区 */}
-      <section className="min-h-screen flex flex-col justify-center items-center text-center space-y-8 py-20">
-        <div className="space-y-4">
-          <h1 className="text-6xl md:text-7xl font-bold bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 bg-clip-text text-transparent animate-pulse">
-            MorroBlog
-          </h1>
-          <p className="text-xl md:text-2xl text-gray-300 max-w-2xl mx-auto">
-            沉浸式宇宙美学风格的个人技术博客系统
-          </p>
-          <p className="text-gray-400 max-w-2xl mx-auto">
-            融合二次元与极客文化，打造属于你的深邃星空博客
-          </p>
+    <div className="pb-6">
+      <section className="grid border-y border-white/[0.15] lg:grid-cols-12">
+        <div className="flex min-h-[620px] flex-col justify-between border-b border-white/[0.15] px-1 py-8 sm:px-4 sm:py-12 lg:col-span-5 lg:border-b-0 lg:border-r lg:px-0 lg:pr-12">
+          <div>
+            <p className="editorial-kicker">MORROBLOG / FIELD NOTES<br />35.6762°N, 139.6503°E</p>
+            <h1 className="display-title mt-14 text-[3.6rem] sm:text-7xl lg:text-[5.35rem]">
+              把技术，<br />放回<span className="display-accent">人的夜晚</span>里。
+            </h1>
+            <p className="copy-lede mt-8 max-w-md">
+              一个关于代码、工具、硬件和偏执好奇心的独立技术刊物。它不追赶噪音，只收集那些值得慢慢读完的信号。
+            </p>
+          </div>
+
+          <div className="mt-12 flex flex-wrap items-center gap-x-6 gap-y-3">
+            {isAuthenticated ? (
+              <Button onClick={() => navigate("/create")} className="editorial-button editorial-button-primary px-5">
+                <PenLine size={14} className="mr-2" /> 写下一篇
+              </Button>
+            ) : (
+              <Button onClick={() => startLogin()} className="editorial-button editorial-button-primary px-5">进入观测站 <ArrowRight size={14} className="ml-2" /></Button>
+            )}
+            <button onClick={() => navigate("/posts")} className="group flex items-center gap-2 text-sm text-slate-400 transition-colors hover:text-[#c6edf0]">
+              浏览文章 <ArrowRight size={14} className="transition-transform group-hover:translate-x-1" />
+            </button>
+          </div>
         </div>
 
-        <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          {isAuthenticated ? (
-            <>
-              <Button
-                size="lg"
-                onClick={() => navigate("/posts")}
-                className="bg-gradient-to-r from-cyan-500 to-purple-500 hover:from-cyan-600 hover:to-purple-600 text-white px-8"
-              >
-                开始阅读
-              </Button>
-              <Button
-                size="lg"
-                onClick={() => navigate("/create")}
-                variant="outline"
-                className="border-cyan-500 text-cyan-400 hover:bg-cyan-500/20 px-8"
-              >
-                发布文章
-              </Button>
-            </>
-          ) : (
-            <>
-              <Button
-                size="lg"
-                onClick={() => startLogin()}
-                className="bg-gradient-to-r from-cyan-500 to-purple-500 hover:from-cyan-600 hover:to-purple-600 text-white px-8"
-              >
-                立即登录
-              </Button>
-              <Button
-                size="lg"
-                onClick={() => navigate("/posts")}
-                variant="outline"
-                className="border-cyan-500 text-cyan-400 hover:bg-cyan-500/20 px-8"
-              >
-                浏览文章
-              </Button>
-            </>
-          )}
-        </div>
-
-        {/* 统计信息 */}
-        <div className="grid grid-cols-3 gap-8 mt-16 text-center">
-          <div>
-            <div className="text-4xl font-bold text-cyan-400">{posts?.total || 0}</div>
-            <div className="text-gray-400 mt-2">篇文章</div>
+        <div className="relative min-h-[500px] lg:col-span-7">
+          <div className="image-frame absolute inset-0">
+            <img src={observatoryCover} alt="夜空下的天文观测台，MorroBlog 首页主视觉" fetchPriority="high" />
           </div>
-          <div>
-            <div className="text-4xl font-bold text-purple-400">∞</div>
-            <div className="text-gray-400 mt-2">无限可能</div>
-          </div>
-          <div>
-            <div className="text-4xl font-bold text-pink-400">✨</div>
-            <div className="text-gray-400 mt-2">宇宙美学</div>
+          <div className="relative flex h-full min-h-[500px] flex-col justify-between p-6 sm:p-10">
+            <div className="flex items-start justify-between text-[10px] font-mono uppercase tracking-[0.16em] text-stone-300">
+              <span className="border border-white/25 px-2 py-1">Issue 01</span><span>night shift / 2026</span>
+            </div>
+            <div className="max-w-sm">
+              <p className="issue-label">THE LONG LOOK</p>
+              <p className="mt-4 text-2xl leading-relaxed text-stone-100 sm:text-3xl" style={{ fontFamily: '"Noto Serif SC", serif' }}>比起更快地刷过信息，<br />我们更想看清一件事。</p>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* 特性展示 */}
-      <section className="space-y-12">
-        <div className="text-center space-y-4">
-          <h2 className="text-4xl font-bold bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent">
-            核心特性
-          </h2>
-          <p className="text-gray-400">完整的博客功能，为你的创意提供无限舞台</p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {features.map((feature, idx) => {
-            const Icon = feature.icon;
-            return (
-              <Card
-                key={idx}
-                className="bg-slate-800/50 border-purple-500/20 hover:border-purple-500/50 transition-all hover:shadow-lg hover:shadow-purple-500/20 p-6 group"
-              >
-                <div className="flex items-start gap-4">
-                  <div className="p-3 bg-gradient-to-br from-cyan-500/20 to-purple-500/20 rounded-lg group-hover:from-cyan-500/30 group-hover:to-purple-500/30 transition-colors">
-                    <Icon className="text-cyan-400 group-hover:text-purple-400 transition-colors" size={24} />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-bold text-white mb-2">{feature.title}</h3>
-                    <p className="text-gray-400 text-sm">{feature.description}</p>
-                  </div>
-                </div>
-              </Card>
-            );
-          })}
-        </div>
+      <section className="grid border-b border-white/[0.15] md:grid-cols-3">
+        {[
+          ["01", "WRITE", "Markdown 为主的写作环境，让思路先于排版。"],
+          ["02", "INDEX", "把文章、标签和归档整理成可回看的个人坐标。"],
+          ["03", "EXCHANGE", "留下一段能够继续生长的讨论，而不是即时反馈。"],
+        ].map(([number, label, copy], index) => (
+          <div key={label} className={`px-1 py-8 sm:px-4 lg:px-0 ${index < 2 ? "border-b border-white/[0.15] md:border-b-0 md:border-r md:pr-8" : "md:pl-8"}`}>
+            <span className="article-index">{number}</span>
+            <p className="mt-4 font-mono text-[11px] tracking-[0.16em] text-[#c6edf0]">{label}</p>
+            <p className="mt-3 max-w-xs text-sm leading-7 text-stone-400">{copy}</p>
+          </div>
+        ))}
       </section>
 
-      {/* 最新文章 */}
-      {posts?.data && posts.data.length > 0 && (
-        <section className="space-y-12">
-          <div className="text-center space-y-4">
-            <h2 className="text-4xl font-bold bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent">
-              最新文章
-            </h2>
-            <p className="text-gray-400">探索最新的技术文章和创意分享</p>
-          </div>
+      <section className="pt-20 sm:pt-28">
+        <div className="flex flex-col gap-5 border-b border-white/[0.15] pb-6 sm:flex-row sm:items-end sm:justify-between">
+          <div><p className="editorial-kicker">SELECTED TRANSMISSIONS / {String(posts?.total || 0).padStart(2, "0")} RECORDS</p><h2 className="display-title mt-4 text-4xl sm:text-5xl">最近的记录</h2></div>
+          <button onClick={() => navigate("/posts")} className="group flex items-center gap-2 text-sm text-stone-400 transition-colors hover:text-[#c6edf0]">进入完整索引 <ArrowRight size={15} className="transition-transform group-hover:translate-x-1" /></button>
+        </div>
 
-          <div className="grid gap-6">
-            {posts.data.map((post: any) => (
-              <Card
-                key={post.id}
-                className="bg-slate-800/50 border-purple-500/20 hover:border-purple-500/50 transition-all hover:shadow-lg hover:shadow-purple-500/20 p-6 cursor-pointer group"
-                onClick={() => navigate(`/posts/${post.slug}`)}
-              >
-                <div className="flex justify-between items-start gap-4">
-                  <div className="flex-1">
-                    <h3 className="text-xl font-bold text-cyan-400 group-hover:text-purple-400 transition-colors mb-2">
-                      {post.title}
-                    </h3>
-                    <p className="text-gray-400 mb-4 line-clamp-2">{post.excerpt}</p>
-                    <div className="flex items-center gap-4 text-sm text-gray-500">
-                      <span>👁 {post.viewCount} 次阅读</span>
-                      <span>📅 {new Date(post.publishedAt).toLocaleDateString()}</span>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="border-cyan-500 text-cyan-400 hover:bg-cyan-500/20"
-                    >
-                      阅读
-                    </Button>
-                  </div>
+        {posts?.data && posts.data.length > 0 ? (
+          <div className="mt-7 grid gap-x-10 gap-y-10 lg:grid-cols-12">
+            {posts.data.map((post: any, index: number) => (
+              <article key={post.id} onClick={() => navigate(`/posts/${post.slug}`)} className={`article-card cursor-pointer ${index === 0 ? "lg:col-span-7" : "lg:col-span-5"}`}>
+                <div className={`${index === 0 ? "aspect-[1.55]" : "aspect-[2]"} article-cover`}><img src={coverFor(index, post)} alt={post.title} loading="lazy" /></div>
+                <div className="grid gap-5 p-5 sm:grid-cols-[auto_1fr] sm:p-6">
+                  <span className="article-index pt-1">{String(index + 1).padStart(2, "0")}</span>
+                  <div><div className="flex items-center justify-between gap-4 font-mono text-[10px] tracking-[0.12em] text-stone-500"><span>{post.category?.name || "FIELD NOTE"}</span><span>{post.publishedAt ? new Date(post.publishedAt).toLocaleDateString() : "DRAFT"}</span></div><h3 className={`${index === 0 ? "text-2xl sm:text-3xl" : "text-xl"} mt-3 font-medium leading-snug text-stone-100`}>{post.title}</h3><p className="mt-3 line-clamp-2 text-sm leading-7 text-stone-400">{post.excerpt || "一则来自夜间观测站的技术记录。"}</p><div className="mt-5 flex items-center gap-4 text-xs text-stone-500"><span className="flex items-center gap-1.5"><Eye size={13} /> {post.viewCount || 0}</span><span className="flex items-center gap-1.5"><BookOpen size={13} /> 阅读</span></div></div>
                 </div>
-              </Card>
+              </article>
             ))}
           </div>
+        ) : (
+          <div className="grid min-h-64 place-items-center border-b border-white/[0.15] text-center"><div><p className="editorial-kicker">NO TRANSMISSION YET</p><p className="mt-3 text-stone-400">第一篇记录，会从这里开始。</p>{isAuthenticated && <Button onClick={() => navigate("/create")} className="editorial-button mt-6 px-5">创建文章</Button>}</div></div>
+        )}
+      </section>
 
-          <div className="text-center">
-            <Button
-              onClick={() => navigate("/posts")}
-              size="lg"
-              variant="outline"
-              className="border-purple-500 text-purple-400 hover:bg-purple-500/20"
-            >
-              查看所有文章
-            </Button>
-          </div>
-        </section>
-      )}
-
-      {/* 号召行动 */}
-      <section className="bg-gradient-to-r from-cyan-500/10 to-purple-500/10 border border-purple-500/20 rounded-lg p-12 text-center space-y-6">
-        <h2 className="text-3xl font-bold text-white">准备好开始了吗？</h2>
-        <p className="text-gray-300 max-w-2xl mx-auto">
-          加入 MorroBlog 社区，分享你的技术见解，在宇宙美学的怀抱中创作属于自己的故事。
-        </p>
-        <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          {isAuthenticated ? (
-            <Button
-              size="lg"
-              onClick={() => navigate("/create")}
-              className="bg-gradient-to-r from-cyan-500 to-purple-500 hover:from-cyan-600 hover:to-purple-600"
-            >
-              现在就写文章
-            </Button>
-          ) : (
-            <Button
-              size="lg"
-              onClick={() => startLogin()}
-              className="bg-gradient-to-r from-cyan-500 to-purple-500 hover:from-cyan-600 hover:to-purple-600"
-            >
-              登录开始创作
-            </Button>
-          )}
-          <Button
-            size="lg"
-            onClick={() => navigate("/about")}
-            variant="outline"
-            className="border-cyan-500 text-cyan-400 hover:bg-cyan-500/20"
-          >
-            了解更多
-          </Button>
-        </div>
+      <section className="grid gap-8 border-b border-white/[0.15] py-20 sm:py-28 lg:grid-cols-12 lg:items-end">
+        <div className="lg:col-span-4"><p className="editorial-kicker">A PERSONAL ARCHIVE, NOT A FEED</p><h2 className="display-title mt-4 text-4xl">保留那些<br />日后仍想翻看的页。</h2></div>
+        <div className="lg:col-span-5"><p className="copy-lede">MorroBlog 不把写作变成冲刺。草稿、标签、归档和图片集，都是为了让一段思考在之后的日子里，仍然能被自己找到。</p></div>
+        <div className="lg:col-span-3 lg:text-right"><button onClick={() => navigate("/archives")} className="group inline-flex items-center gap-2 text-sm text-stone-400 transition-colors hover:text-[#c6edf0]">翻阅时间轴 <ArrowRight size={15} className="transition-transform group-hover:translate-x-1" /></button></div>
       </section>
     </div>
   );

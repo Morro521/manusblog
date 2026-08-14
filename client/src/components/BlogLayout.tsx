@@ -1,242 +1,89 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { useLocation } from "wouter";
-import { useEffect, useRef } from "react";
+import { useRef, useState } from "react";
 import { startLogin } from "@/const";
-import { Music, Menu, X } from "lucide-react";
-import { useState } from "react";
+import { Menu, Pause, PenLine, Play, X } from "lucide-react";
+
+const navItems = [
+  { label: "首页", href: "/" },
+  { label: "文章", href: "/posts" },
+  { label: "归档", href: "/archives" },
+  { label: "标签", href: "/tags" },
+  { label: "图片集", href: "/gallery" },
+  { label: "关于", href: "/about" },
+];
 
 export default function BlogLayout({ children }: { children: React.ReactNode }) {
   const { user, logout, isAuthenticated } = useAuth();
-  const [, navigate] = useLocation();
+  const [location, navigate] = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [audioPlaying, setAudioPlaying] = useState(false);
   const audioRef = useRef<HTMLAudioElement>(null);
 
-  // 初始化樱花粒子效果
-  useEffect(() => {
-    const createSakuraParticle = () => {
-      const particle = document.createElement("div");
-      particle.className = "sakura-particle";
-      particle.style.left = Math.random() * 100 + "%";
-      particle.style.top = "-10px";
-      particle.style.opacity = String(Math.random() * 0.7 + 0.3);
-      particle.style.animation = `sakuraFall ${Math.random() * 3 + 2}s linear forwards`;
-      document.body.appendChild(particle);
-
-      setTimeout(() => particle.remove(), 5000);
-    };
-
-    const interval = setInterval(createSakuraParticle, 300);
-    return () => clearInterval(interval);
-  }, []);
-
-  // 自动播放背景音乐
-  useEffect(() => {
-    if (audioRef.current) {
-      audioRef.current.play().catch(() => {
-        // 浏览器可能阻止自动播放，用户需要交互
-      });
+  const toggleAudio = () => {
+    if (!audioRef.current) return;
+    if (audioRef.current.paused) {
+      void audioRef.current.play().then(() => setAudioPlaying(true)).catch(() => setAudioPlaying(false));
+      return;
     }
-  }, []);
+    audioRef.current.pause();
+    setAudioPlaying(false);
+  };
 
-  const navItems = [
-    { label: "首页", href: "/" },
-    { label: "文章", href: "/posts" },
-    { label: "归档", href: "/archives" },
-    { label: "标签", href: "/tags" },
-    { label: "图片集", href: "/gallery" },
-    { label: "关于", href: "/about" },
-  ];
+  const go = (href: string) => {
+    navigate(href);
+    setMobileMenuOpen(false);
+  };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-900 to-slate-900 text-white overflow-hidden">
-      {/* 背景星空效果 */}
-      <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(120,119,198,0.3),rgba(255,255,255,0))]"></div>
-        <div className="stars"></div>
-      </div>
+    <div className="site-shell text-stone-100">
+      <header className="relative z-50 bg-[#10110f]">
+        <div className="container flex min-h-[78px] items-center justify-between gap-5 border-b border-white/[0.15]">
+          <button onClick={() => go("/")} className="flex min-w-0 items-center gap-3 text-left" aria-label="返回 MorroBlog 首页">
+            <span className="grid h-8 w-8 place-items-center border border-[#c6edf0] text-[11px] font-medium text-[#c6edf0]">M</span>
+            <span className="min-w-0"><span className="block truncate font-mono text-xs tracking-[0.17em] text-stone-100">MORROBLOG</span><span className="hidden font-mono text-[9px] tracking-[0.12em] text-stone-500 sm:block">MIDNIGHT FIELD NOTES</span></span>
+          </button>
 
-      {/* 樱花粒子容器 */}
-      <style>{`
-        @keyframes sakuraFall {
-          to {
-            transform: translateY(100vh) rotate(360deg);
-            opacity: 0;
-          }
-        }
-        
-        @keyframes twinkle {
-          0%, 100% { opacity: 0.3; }
-          50% { opacity: 1; }
-        }
-        
-        .sakura-particle {
-          position: fixed;
-          width: 10px;
-          height: 10px;
-          background: radial-gradient(circle, rgba(255,192,203,0.8), rgba(255,182,193,0.4));
-          border-radius: 50%;
-          pointer-events: none;
-          z-index: 10;
-          box-shadow: 0 0 10px rgba(255,192,203,0.6);
-        }
-        
-        .stars {
-          position: absolute;
-          width: 100%;
-          height: 100%;
-          background-image: 
-            radial-gradient(2px 2px at 20px 30px, rgba(255,255,255,0.8), rgba(0,0,0,0)),
-            radial-gradient(2px 2px at 60px 70px, rgba(255,255,255,0.6), rgba(0,0,0,0)),
-            radial-gradient(1px 1px at 50px 50px, rgba(255,255,255,0.9), rgba(0,0,0,0)),
-            radial-gradient(1px 1px at 130px 80px, rgba(255,255,255,0.7), rgba(0,0,0,0)),
-            radial-gradient(2px 2px at 90px 10px, rgba(255,255,255,0.8), rgba(0,0,0,0));
-          background-repeat: repeat;
-          background-size: 200px 200px;
-          animation: twinkle 3s ease-in-out infinite;
-        }
-      `}</style>
+          <nav className="hidden items-center gap-5 lg:flex" aria-label="主导航">
+            {navItems.map((item) => {
+              const active = location === item.href || (item.href !== "/" && location.startsWith(item.href));
+              return <button key={item.href} onClick={() => go(item.href)} className={`border-b py-1 text-sm transition-colors ${active ? "border-[#c6edf0] text-[#c6edf0]" : "border-transparent text-stone-500 hover:border-stone-500 hover:text-stone-200"}`}>{item.label}</button>;
+            })}
+          </nav>
 
-      {/* 顶部导航栏 */}
-      <nav className="relative z-50 border-b border-purple-500/20 bg-slate-950/80 backdrop-blur-md sticky top-0">
-        <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
           <div className="flex items-center gap-2">
-            <h1 
-              className="text-2xl font-bold bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent cursor-pointer hover:scale-105 transition-transform"
-              onClick={() => navigate("/")}
-            >
-              MorroBlog
-            </h1>
-          </div>
-
-          {/* 桌面导航 */}
-          <div className="hidden md:flex items-center gap-6">
-            {navItems.map((item) => (
-              <button
-                key={item.href}
-                onClick={() => navigate(item.href)}
-                className="text-sm font-medium text-gray-300 hover:text-cyan-400 transition-colors"
-              >
-                {item.label}
-              </button>
-            ))}
-          </div>
-
-          {/* 右侧操作按钮 */}
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => {
-                if (audioRef.current) {
-                  if (audioRef.current.paused) {
-                    audioRef.current.play();
-                  } else {
-                    audioRef.current.pause();
-                  }
-                }
-              }}
-              className="p-2 hover:bg-purple-500/20 rounded-lg transition-colors"
-              title="音乐播放器"
-            >
-              <Music size={20} />
+            <button onClick={toggleAudio} className="hidden items-center gap-1.5 px-2 py-2 font-mono text-[10px] tracking-[0.1em] text-stone-500 hover:text-[#c6edf0] sm:flex" title="播放或暂停环境音乐">
+              {audioPlaying ? <Pause size={12} /> : <Play size={12} />} {audioPlaying ? "PAUSE" : "AMBIENT"}
             </button>
-
             {isAuthenticated ? (
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-300">{user?.name}</span>
-                {user?.role === "admin" && (
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => navigate("/admin")}
-                    className="border-purple-500 text-purple-400 hover:bg-purple-500/20"
-                  >
-                    管理
-                  </Button>
-                )}
-                <Button
-                  size="sm"
-                  onClick={() => navigate("/create")}
-                  className="bg-gradient-to-r from-cyan-500 to-purple-500 hover:from-cyan-600 hover:to-purple-600"
-                >
-                  发文章
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => logout()}
-                  className="border-red-500 text-red-400 hover:bg-red-500/20"
-                >
-                  登出
-                </Button>
+              <div className="hidden items-center gap-3 md:flex">
+                <span className="max-w-24 truncate text-xs text-stone-500">{user?.name || "reader"}</span>
+                {user?.role === "admin" && <button onClick={() => go("/admin")} className="text-xs text-stone-500 hover:text-stone-100">管理</button>}
+                <Button onClick={() => go("/create")} size="sm" className="editorial-button editorial-button-primary px-3"><PenLine size={13} className="mr-1.5" /> 写作</Button>
+                <button onClick={() => logout()} className="text-xs text-stone-600 hover:text-[#e39a86]">登出</button>
               </div>
             ) : (
-              <Button
-                size="sm"
-                onClick={() => startLogin()}
-                className="bg-gradient-to-r from-cyan-500 to-purple-500 hover:from-cyan-600 hover:to-purple-600"
-              >
-                登录
-              </Button>
+              <Button onClick={() => startLogin()} size="sm" className="editorial-button editorial-button-primary px-3">登录</Button>
             )}
-
-            {/* 移动菜单按钮 */}
-            <button
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden p-2 hover:bg-purple-500/20 rounded-lg transition-colors"
-            >
-              {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
-            </button>
+            <button onClick={() => setMobileMenuOpen((open) => !open)} className="grid h-9 w-9 place-items-center border border-white/15 text-stone-300 hover:border-[#c6edf0] lg:hidden" aria-label="切换导航菜单" aria-expanded={mobileMenuOpen}>{mobileMenuOpen ? <X size={17} /> : <Menu size={17} />}</button>
           </div>
         </div>
 
-        {/* 移动菜单 */}
-        {mobileMenuOpen && (
-          <div className="md:hidden bg-slate-900/95 backdrop-blur-md border-t border-purple-500/20 py-4 px-4">
-            {navItems.map((item) => (
-              <button
-                key={item.href}
-                onClick={() => {
-                  navigate(item.href);
-                  setMobileMenuOpen(false);
-                }}
-                className="block w-full text-left py-2 text-sm text-gray-300 hover:text-cyan-400 transition-colors"
-              >
-                {item.label}
-              </button>
-            ))}
-          </div>
-        )}
-      </nav>
+        {mobileMenuOpen && <div className="border-b border-white/[0.15] bg-[#10110f] lg:hidden"><div className="container grid py-4"><div className="grid border-y border-white/[0.12]">{navItems.map((item) => <button key={item.href} onClick={() => go(item.href)} className="border-b border-white/[0.1] py-3 text-left text-sm text-stone-300 last:border-b-0 hover:text-[#c6edf0]">{item.label}</button>)}</div><div className="mt-4 flex items-center justify-between"><button onClick={toggleAudio} className="flex items-center gap-2 font-mono text-[10px] tracking-[0.12em] text-stone-500">{audioPlaying ? <Pause size={12} /> : <Play size={12} />}{audioPlaying ? "PAUSE AMBIENT" : "PLAY AMBIENT"}</button>{isAuthenticated && <button onClick={() => go("/create")} className="font-mono text-[10px] tracking-[0.12em] text-[#c6edf0]">NEW ENTRY +</button>}</div></div></div>}
+      </header>
 
-      {/* Live2D 看板娘占位区 */}
-      <div className="fixed bottom-4 right-4 z-40 w-32 h-40 bg-gradient-to-b from-purple-500/20 to-transparent border border-purple-500/30 rounded-lg flex items-center justify-center backdrop-blur-sm">
-        <div className="text-center text-xs text-gray-400">
-          <div className="text-2xl mb-2">✨</div>
-          <p>Live2D</p>
-          <p>看板娘</p>
-        </div>
-      </div>
+      <main className="container relative z-10 py-10 sm:py-14">{children}</main>
 
-      {/* 主内容区 */}
-      <main className="relative z-20 max-w-7xl mx-auto px-4 py-8">
-        {children}
-      </main>
-
-      {/* 背景音乐播放器 */}
-      <audio
-        ref={audioRef}
-        loop
-        src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"
-        className="hidden"
-      />
-
-      {/* 页脚 */}
-      <footer className="relative z-20 border-t border-purple-500/20 bg-slate-950/80 backdrop-blur-md mt-16 py-8">
-        <div className="max-w-7xl mx-auto px-4 text-center text-gray-400 text-sm">
-          <p>© 2024 MorroBlog - 沉浸式宇宙美学博客系统</p>
-          <p className="mt-2">Powered by Next.js + React + Tailwind CSS</p>
+      <footer className="relative z-10 mt-12 border-t border-white/[0.15] bg-[#10110f] py-8 sm:mt-20 sm:py-11">
+        <div className="container grid gap-8 text-xs sm:grid-cols-12 sm:items-end">
+          <div className="sm:col-span-5"><p className="font-mono text-[10px] tracking-[0.16em] text-stone-300">MORROBLOG / MIDNIGHT FIELD NOTES</p><p className="mt-3 max-w-sm leading-6 text-stone-500">记录关于技术与创造的私人坐标。页面保持安静，内容保持可读。</p></div>
+          <div className="sm:col-span-4"><p className="editorial-kicker">LIVE2D BAY</p><p className="mt-2 text-stone-500">看板娘模型接口预留，尚未接入角色资源。</p></div>
+          <div className="text-stone-600 sm:col-span-3 sm:text-right"><p>© 2026 MORRO</p><p className="mt-2 font-mono text-[10px] tracking-[0.1em]">ISSUE 01 / ONLINE</p></div>
         </div>
       </footer>
+
+      <audio ref={audioRef} loop preload="none" src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" className="hidden" />
     </div>
   );
 }

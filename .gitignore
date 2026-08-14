@@ -82,3 +82,7 @@ docker-compose.override.yml
 .turbo/
 dist-ssr/
 *.local
+.project-config.json
+
+.project-config.json
+.manus-logs/

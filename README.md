@@ -1,307 +1,66 @@
-# MorroBlog - 沉浸式宇宙美学博客系统
+# MorroBlog
 
-一个融合二次元与极客文化的个人技术博客系统，采用沉浸式宇宙美学设计风格，支持在 fnos 系统上一键部署。
+> **一个记录自托管、网络、硬件与个人技术实验的静态技术档案。**
 
-## ✨ 核心功能
+本项目由 React、TypeScript 和 Vite 构建为纯静态网站。它不包含数据库、认证、对象存储、API、Docker 服务或环境变量；构建产物可由 **GitHub Pages** 直接托管。
 
-### 用户与认证
-- 用户注册、登录、登出
-- 管理员与普通用户角色区分
-- 权限管理系统
+## 内容边界
 
-### 文章管理
-- Markdown 编辑器支持
-- 文章发布、草稿保存、删除
-- 文章封面图上传（S3 存储）
-- 阅读量统计与显示
+新版主页与索引整理自 Morro 已公开的两个站点。个人主页提供博客和 GitHub 等入口；MorroBlog 提供已发布文章的标题、日期、主题与原文链接。静态索引不复制原文，以既有博客为唯一正文来源。
 
-### 内容组织
-- 标签系统（创建、筛选）
-- 分类系统（创建、筛选）
-- 时间轴式文章归档
-- 图片集展示功能
+| 内容 | 来源 | 在本项目中的位置 |
+|---|---|---|
+| 个人主页入口 | [morro.asia](https://morro.asia/) | 站点导航与“关于”页 |
+| 文章索引 | [blog.morro.asia](https://blog.morro.asia/) | `client/src/data/site.ts` |
+| GitHub 出口 | [realmorro369-arch](https://github.com/realmorro369-arch) | 站点导航与页脚 |
+| 本地视觉资源 | Git 跟踪的 PNG 文件 | `client/public/assets/` |
 
-### 互动功能
-- 评论系统（支持嵌套回复）
-- 评论审核机制
-- 实时互动反馈
-
-### 视觉设计
-- 沉浸式宇宙美学主题（午夜蓝 + 紫罗兰渐变）
-- 樱花粒子动效
-- Live2D 看板娘占位区
-- 自动播放背景音乐
-- 完全响应式布局
-
-### 管理后台
-- 文章管理模块
-- 用户管理模块
-- 评论审核模块
-
-## 🛠️ 技术栈
-
-| 层级 | 技术 |
-|------|------|
-| **前端** | React 19 + Tailwind CSS 4 + TypeScript |
-| **后端** | Express + tRPC + Node.js |
-| **数据库** | MySQL 8.0 |
-| **存储** | S3（文件存储） |
-| **部署** | Docker + fnos |
-| **认证** | Manus OAuth |
-
-## 📦 快速开始
-
-### 本地开发
+## 本地开发
 
 ```bash
-# 安装依赖
 pnpm install
-
-# 启动开发服务器
 pnpm dev
+```
 
-# 类型检查
+开发服务器会输出本地访问地址。执行以下命令可进行静态构建与类型检查：
+
+```bash
 pnpm check
-
-# 运行测试
-pnpm test
+pnpm build
 ```
 
-访问 `http://localhost:3000` 查看应用。
+构建结果写入 `dist/`，不需要启动任何后端服务。
 
-### Docker 部署（fnos）
+## 内容维护
 
-#### 方式 1：使用 docker-compose
+新增或修订首页、索引、标签与时间轴内容时，只需编辑 `client/src/data/site.ts`。每条记录包含标题、发布日期、摘要、标签、仓库内封面图以及指向原始 MorroBlog 文章的 URL。静态文章页会展示该索引信息，并提供“阅读原文”出口。
 
-```bash
-# 复制环境变量文件
-cp .env.example .env
+视觉资源必须保存在 `client/public/assets/`，然后通过 `assetUrl()` 引用。请勿改用对象存储、第三方图床或运行时图片接口，以保留 GitHub Pages 的独立可部署性。
 
-# 编辑 .env 文件，填入你的配置
-# 然后启动服务
-docker-compose up -d
+## 部署到 GitHub Pages
+
+仓库提交了已构建的 `docs/` 静态目录。请在仓库的 **Settings → Pages** 中把部署来源设置为 **Deploy from a branch**，选择 `main` 分支与 `/docs` 目录。GitHub Pages 会直接托管该目录，无需 GitHub Actions、应用服务器或环境变量。
+
+修改内容后，请先运行 `pnpm build`，再将新的 `dist/` 内容同步至 `docs/` 并一并提交。这样，源代码、视觉资源和可部署产物都由 Git 管理。
+
+## 目录结构
+
+```text
+client/
+├── public/assets/             # 跟踪在 Git 中的图片与 favicon
+└── src/
+    ├── components/SiteLayout.tsx
+    ├── data/site.ts           # 版本化的站点和文章数据
+    ├── pages/Static*.tsx      # 纯静态路由页面
+    ├── App.tsx                # Hash 路由，适配 GitHub Pages
+    └── index.css              # “地层信号”设计系统
+docs/                           # GitHub Pages 直接托管的已构建静态产物
 ```
 
-#### 方式 2：在 fnos 中部署
+## 设计方向
 
-1. 在 fnos 系统中打开 Docker 应用
-2. 上传 `docker-compose.yml` 文件
-3. 配置环境变量
-4. 点击"启动"按钮
+界面采用“**地层信号**”的编辑型设计：深海墨蓝承载长阅读，矿物白保证可读性，**Morro Signal Teal `#00A89A`**用于坐标、状态和阅读路径。布局使用章节编号、信号线和非对称图文关系，避免通用卡片墙和过度装饰。
 
-#### 环境变量配置
+## 许可证
 
-```env
-# 数据库
-MYSQL_ROOT_PASSWORD=your-password
-MYSQL_DATABASE=morroblog
-MYSQL_USER=morroblog
-MYSQL_PASSWORD=your-db-password
-
-# 应用
-JWT_SECRET=your-jwt-secret
-NODE_ENV=production
-
-# OAuth（Manus）
-VITE_APP_ID=your-app-id
-OAUTH_SERVER_URL=https://api.manus.im
-VITE_OAUTH_PORTAL_URL=https://manus.im/login
-
-# 所有者信息
-OWNER_OPEN_ID=your-owner-id
-OWNER_NAME=Morro
-```
-
-## 📁 项目结构
-
-```
-MorroBlog/
-├── client/                 # 前端应用
-│   ├── src/
-│   │   ├── pages/         # 页面组件
-│   │   ├── components/    # 可复用组件
-│   │   ├── lib/           # 工具函数
-│   │   └── App.tsx        # 主应用
-│   └── index.html
-├── server/                # 后端应用
-│   ├── routers.ts         # tRPC 路由
-│   ├── db.ts              # 数据库查询
-│   └── _core/             # 核心框架
-├── drizzle/               # 数据库 schema
-├── docker-compose.yml     # Docker 编排
-├── Dockerfile             # Docker 镜像
-└── package.json
-```
-
-## 🗄️ 数据库架构
-
-### 核心表
-
-| 表名 | 说明 |
-|------|------|
-| `users` | 用户表 |
-| `posts` | 文章表 |
-| `comments` | 评论表（支持嵌套） |
-| `tags` | 标签表 |
-| `categories` | 分类表 |
-| `post_tags` | 文章-标签关联 |
-| `galleries` | 图片集表 |
-| `images` | 图片表 |
-
-## 🔌 API 路由
-
-### 文章 API
-- `GET /api/trpc/posts.list` - 获取文章列表
-- `GET /api/trpc/posts.getBySlug` - 获取文章详情
-- `POST /api/trpc/posts.create` - 创建文章
-- `POST /api/trpc/posts.update` - 更新文章
-- `POST /api/trpc/posts.delete` - 删除文章
-
-### 评论 API
-- `GET /api/trpc/comments.list` - 获取评论列表
-- `POST /api/trpc/comments.create` - 创建评论
-- `POST /api/trpc/comments.delete` - 删除评论
-
-### 标签 API
-- `GET /api/trpc/tags.list` - 获取标签列表
-- `POST /api/trpc/tags.create` - 创建标签（管理员）
-
-### 分类 API
-- `GET /api/trpc/categories.list` - 获取分类列表
-- `POST /api/trpc/categories.create` - 创建分类（管理员）
-
-### 图片集 API
-- `GET /api/trpc/galleries.list` - 获取图片集列表
-- `GET /api/trpc/galleries.getById` - 获取图片集详情
-- `POST /api/trpc/galleries.create` - 创建图片集（管理员）
-- `POST /api/trpc/galleries.addImage` - 添加图片（管理员）
-
-## 🎨 设计特色
-
-### 宇宙美学主题
-- 午夜蓝与紫罗兰渐变背景
-- 散落星光与柔和星云光晕
-- 发光青色外描边标题
-- 行星球体与镜头光晕效果
-
-### 交互动效
-- 樱花粒子持续飘落
-- 平滑过渡与悬停效果
-- 响应式导航菜单
-- 自动播放背景音乐
-
-## 🔐 安全性
-
-- OAuth 2.0 认证
-- JWT 会话管理
-- 评论审核机制
-- 管理员权限控制
-- SQL 注入防护（Drizzle ORM）
-
-## 📝 开发指南
-
-### 添加新页面
-
-1. 在 `client/src/pages/` 创建页面组件
-2. 在 `client/src/App.tsx` 中添加路由
-3. 在 `BlogLayout` 中更新导航（如需要）
-
-### 添加新 API
-
-1. 在 `server/db.ts` 添加数据库查询函数
-2. 在 `server/routers.ts` 添加 tRPC 过程
-3. 在前端使用 `trpc.*.useQuery/useMutation` 调用
-
-### 数据库迁移
-
-```bash
-# 修改 schema
-# 编辑 drizzle/schema.ts
-
-# 生成迁移文件
-pnpm drizzle-kit generate
-
-# 执行迁移
-pnpm drizzle-kit migrate
-```
-
-## 🚀 部署到 fnos
-
-### 前置条件
-- fnos 系统已安装
-- Docker 支持已启用
-- MySQL 容器可用
-
-### 部署步骤
-
-1. **克隆项目**
-   ```bash
-   git clone https://github.com/your-username/MorroBlog.git
-   cd MorroBlog
-   ```
-
-2. **配置环境**
-   ```bash
-   cp .env.example .env
-   # 编辑 .env 文件
-   ```
-
-3. **启动服务**
-   ```bash
-   docker-compose up -d
-   ```
-
-4. **访问应用**
-   - 打开浏览器访问 `http://your-fnos-ip:3000`
-   - 使用 Manus OAuth 登录
-
-## 📊 监控与维护
-
-### 查看日志
-```bash
-docker-compose logs -f app
-docker-compose logs -f mysql
-```
-
-### 备份数据库
-```bash
-docker-compose exec mysql mysqldump -u morroblog -p morroblog > backup.sql
-```
-
-### 更新应用
-```bash
-git pull
-docker-compose down
-docker-compose build
-docker-compose up -d
-```
-
-## 🐛 故障排除
-
-| 问题 | 解决方案 |
-|------|--------|
-| 数据库连接失败 | 检查 `DATABASE_URL` 环境变量 |
-| OAuth 登录失败 | 验证 `VITE_APP_ID` 和 `OAUTH_SERVER_URL` |
-| 文件上传失败 | 检查 S3 存储配置 |
-| 页面加载缓慢 | 检查网络连接和数据库性能 |
-
-## 📄 许可证
-
-MIT License
-
-## 👤 作者
-
-Morro - 沉浸式宇宙美学博客爱好者
-
-## 🙏 致谢
-
-感谢所有开源项目的贡献者，特别是：
-- React & Tailwind CSS 团队
-- tRPC 和 Drizzle ORM 开发者
-- Manus 平台支持
-
----
-
-**最后更新**: 2024年7月15日  
-**版本**: v1.0.0  
-**状态**: 🚀 生产就绪
+MIT License。

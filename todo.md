@@ -106,6 +106,7 @@
 - [x] docker-compose.yml 编写
 - [x] fnos 适配测试（Dockerfile/Compose 回归测试与 pnpm build 通过；当前 Sandbox 未安装 Docker）
 - [x] 保存 fnos 容器构建修复检查点并同步 GitHub（checkpoint d4739b9f；GitHub commit 57eed54）
+- [x] 保存可恢复草稿工作区检查点并同步 GitHub（checkpoint f26658e8；GitHub commit e9e2e75）
 
 ### Phase 9: 版本提交与优化
 - [x] v1.0 版本提交到 GitHub
@@ -200,7 +201,9 @@
 - [x] 在管理员控制台提供创建图片集与上传 S3 图片入口
 - [x] 创建图片集详情路由，展示真实上传图片与元信息
 - [x] 优化图库浏览页的封面、空状态和移动端版式
-- [ ] 为图片集权限与详情查询补充测试并完成跨端验证
+- [x] 为图片集公开详情查询与管理员写入权限补充自动化测试
+- [ ] 在真实无图片集数据下记录并复核 `/gallery` 空状态的桌面与手机端验收结果，确认继续浏览路径
+- [x] 为图库空状态与不存在详情返回路径补充自动化契约测试
 
 ## 写作工作台重构
 

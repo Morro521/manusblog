@@ -1,7 +1,9 @@
 {
-  "include": ["client/src/main.tsx", "client/src/App.tsx", "client/src/components/SiteLayout.tsx", "client/src/data/site.ts", "client/src/pages/Static*.tsx"],
+  "include": ["client/src/**/*", "shared/**/*", "server/**/*"],
   "exclude": ["node_modules", "build", "dist", "**/*.test.ts"],
   "compilerOptions": {
+    "incremental": true,
+    "tsBuildInfoFile": "./node_modules/typescript/tsbuildinfo",
     "noEmit": true,
     "module": "ESNext",
     "strict": true,
@@ -12,7 +14,10 @@
     "allowImportingTsExtensions": true,
     "moduleResolution": "bundler",
     "baseUrl": ".",
-    "types": ["vite/client"],
-    "paths": { "@/*": ["./client/src/*"] }
+    "types": ["node", "vite/client"],
+    "paths": {
+      "@/*": ["./client/src/*"],
+      "@shared/*": ["./shared/*"]
+    }
   }
 }

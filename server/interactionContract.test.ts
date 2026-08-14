@@ -32,8 +32,15 @@ describe("public interaction contract", () => {
   it("honors the tag query used by detail and tag-index navigation", () => {
     const postsList = readSource("client/src/pages/PostsList.tsx");
 
-    expect(postsList).toContain("const tagFromUrl = new URLSearchParams(queryString).get(\"tag\")");
+    expect(postsList).toContain("const urlParams = new URLSearchParams(queryString)");
+    expect(postsList).toContain("const tagFromUrl = urlParams.get(\"tag\")");
     expect(postsList).toContain("useState<string | null>(tagFromUrl)");
+  });
+
+  it("keeps category constraints in the tag-filter query branch and its matching total", () => {
+    const dbSource = readSource("server/db.ts");
+
+    expect(dbSource.match(/if \(filters\.tagSlug\)[\s\S]*?if \(filters\.categoryId\) conditions\.push\(eq\(posts\.categoryId, filters\.categoryId\)\);/g)?.length).toBe(2);
   });
 
   it("keeps the writing workspace focused on a publishable entry instead of exposing an unrecoverable draft action", () => {

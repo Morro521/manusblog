@@ -107,14 +107,37 @@ export async function getAllUsers(limit: number = 50, offset: number = 0) {
 
 // ============ 文章相关查询 ============
 
-export async function getPublishedPosts(limit: number = 10, offset: number = 0) {
+export type PublishedPostFilters = {
+  tagSlug?: string;
+  categoryId?: number;
+};
+
+export async function getPublishedPosts(limit: number = 10, offset: number = 0, filters: PublishedPostFilters = {}) {
   const db = await getDb();
   if (!db) return [];
+
+  if (filters.tagSlug) {
+    const conditions = [eq(tags.slug, filters.tagSlug), eq(posts.status, 'published')];
+    if (filters.categoryId) conditions.push(eq(posts.categoryId, filters.categoryId));
+    const rows = await db
+      .select({ post: posts })
+      .from(postTags)
+      .innerJoin(tags, eq(postTags.tagId, tags.id))
+      .innerJoin(posts, eq(postTags.postId, posts.id))
+      .where(and(...conditions))
+      .orderBy(desc(posts.publishedAt))
+      .limit(limit)
+      .offset(offset);
+    return rows.map((row) => row.post);
+  }
+
+  const conditions = [eq(posts.status, 'published')];
+  if (filters.categoryId) conditions.push(eq(posts.categoryId, filters.categoryId));
   
   return db
     .select()
     .from(posts)
-    .where(eq(posts.status, 'published'))
+    .where(and(...conditions))
     .orderBy(desc(posts.publishedAt))
     .limit(limit)
     .offset(offset);
@@ -212,14 +235,29 @@ export async function incrementPostViewCount(postId: number) {
   }
 }
 
-export async function getPostCount(status: string = 'published') {
+export async function getPostCount(status: string = 'published', filters: PublishedPostFilters = {}) {
   const db = await getDb();
   if (!db) return 0;
+
+  if (filters.tagSlug) {
+    const conditions = [eq(tags.slug, filters.tagSlug), eq(posts.status, status as any)];
+    if (filters.categoryId) conditions.push(eq(posts.categoryId, filters.categoryId));
+    const result = await db
+      .select({ id: posts.id })
+      .from(postTags)
+      .innerJoin(tags, eq(postTags.tagId, tags.id))
+      .innerJoin(posts, eq(postTags.postId, posts.id))
+      .where(and(...conditions));
+    return result.length;
+  }
+
+  const conditions = [eq(posts.status, status as any)];
+  if (filters.categoryId) conditions.push(eq(posts.categoryId, filters.categoryId));
   
   const result = await db
     .select()
     .from(posts)
-    .where(eq(posts.status, status as any));
+    .where(and(...conditions));
   
   return result.length;
 }

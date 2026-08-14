@@ -229,14 +229,15 @@ export const appRouter = router({
         page: z.number().default(1),
         limit: z.number().default(20),
       }))
-      .query(async ({ input }) => {
+      .query(async ({ input, ctx }) => {
         const offset = (input.page - 1) * input.limit;
-        const comments_data = await db.getPostComments(input.postId, input.limit, offset);
+        const viewerId = ctx.user?.id;
+        const comments_data = await db.getPostComments(input.postId, input.limit, offset, viewerId);
         
         // 获取每条评论的回复
         const commentsWithReplies = await Promise.all(
           comments_data.map(async (comment) => {
-            const replies = await db.getCommentReplies(comment.id);
+            const replies = await db.getCommentReplies(comment.id, viewerId);
             return { ...comment, replies };
           })
         );

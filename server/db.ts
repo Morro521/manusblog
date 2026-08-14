@@ -1,9 +1,11 @@
-import { eq, desc, and, isNull } from "drizzle-orm";
+import { eq, desc, and, isNull, or } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import { InsertUser, users, posts, comments, tags, categories, postTags, galleries, images } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
+
+type CommentTree = typeof comments.$inferSelect & { replies: CommentTree[] };
 
 // Lazily create the drizzle instance so local tooling can run without a DB.
 export async function getDb() {
@@ -276,28 +278,49 @@ export async function getCategoryById(id: number) {
 
 // ============ 评论相关查询 ============
 
-export async function getPostComments(postId: number, limit: number = 20, offset: number = 0) {
+export async function getPostComments(postId: number, limit: number = 20, offset: number = 0, viewerId?: number) {
   const db = await getDb();
   if (!db) return [];
+
+  const visibility = viewerId
+    ? or(eq(comments.status, 'approved'), and(eq(comments.status, 'pending'), eq(comments.authorId, viewerId)))
+    : eq(comments.status, 'approved');
   
   return db
     .select()
     .from(comments)
-    .where(and(eq(comments.postId, postId), eq(comments.status, 'approved'), isNull(comments.parentCommentId)))
+    .where(and(eq(comments.postId, postId), visibility, isNull(comments.parentCommentId)))
     .orderBy(desc(comments.createdAt))
     .limit(limit)
     .offset(offset);
 }
 
-export async function getCommentReplies(parentCommentId: number) {
+export async function getCommentReplies(parentCommentId: number, viewerId?: number): Promise<CommentTree[]> {
   const db = await getDb();
   if (!db) return [];
+
+  return getCommentRepliesFromDb(db, parentCommentId, viewerId);
+}
+
+/** 供评论查询和单元测试复用的递归树组装逻辑。 */
+export async function getCommentRepliesFromDb(db: any, parentCommentId: number, viewerId?: number): Promise<CommentTree[]> {
+
+  const visibility = viewerId
+    ? or(eq(comments.status, 'approved'), and(eq(comments.status, 'pending'), eq(comments.authorId, viewerId)))
+    : eq(comments.status, 'approved');
   
-  return db
+  const replies = await db
     .select()
     .from(comments)
-    .where(and(eq(comments.parentCommentId, parentCommentId), eq(comments.status, 'approved')))
-    .orderBy(comments.createdAt);
+    .where(and(eq(comments.parentCommentId, parentCommentId), visibility))
+    .orderBy(comments.createdAt) as Array<typeof comments.$inferSelect>;
+
+  return Promise.all(
+    replies.map(async (reply) => ({
+      ...reply,
+      replies: await getCommentRepliesFromDb(db, reply.id, viewerId),
+    }))
+  );
 }
 
 export async function getPendingComments(limit: number = 20, offset: number = 0) {

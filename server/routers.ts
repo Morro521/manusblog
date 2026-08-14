@@ -311,6 +311,16 @@ export const appRouter = router({
 
   // ============ 管理员路由 ============
   admin: router({
+    posts: router({
+      list: adminProcedure
+        .input(z.object({ page: z.number().default(1), limit: z.number().default(50) }))
+        .query(async ({ input }) => db.getAdminPosts(input.limit, (input.page - 1) * input.limit)),
+    }),
+    users: router({
+      list: adminProcedure
+        .input(z.object({ page: z.number().default(1), limit: z.number().default(50) }))
+        .query(async ({ input }) => db.getAllUsers(input.limit, (input.page - 1) * input.limit)),
+    }),
     comments: router({
       pending: adminProcedure
         .input(z.object({

@@ -99,6 +99,12 @@ export async function getUserById(id: number) {
   return result.length > 0 ? result[0] : undefined;
 }
 
+export async function getAllUsers(limit: number = 50, offset: number = 0) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(users).orderBy(desc(users.lastSignedIn)).limit(limit).offset(offset);
+}
+
 // ============ 文章相关查询 ============
 
 export async function getPublishedPosts(limit: number = 10, offset: number = 0) {
@@ -175,6 +181,12 @@ export async function getUserPosts(userId: number, limit: number = 10, offset: n
     .orderBy(desc(posts.createdAt))
     .limit(limit)
     .offset(offset);
+}
+
+export async function getAdminPosts(limit: number = 50, offset: number = 0) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(posts).orderBy(desc(posts.updatedAt)).limit(limit).offset(offset);
 }
 
 export async function getPostsByCategory(categoryId: number, limit: number = 10, offset: number = 0) {

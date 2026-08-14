@@ -43,13 +43,25 @@ describe("public interaction contract", () => {
     expect(dbSource.match(/if \(filters\.tagSlug\)[\s\S]*?if \(filters\.categoryId\) conditions\.push\(eq\(posts\.categoryId, filters\.categoryId\)\);/g)?.length).toBe(2);
   });
 
-  it("keeps the writing workspace focused on a publishable entry instead of exposing an unrecoverable draft action", () => {
+  it("only exposes draft persistence alongside a concrete author workspace recovery path", () => {
+    const createPost = readSource("client/src/pages/CreatePost.tsx");
+    const workspace = readSource("client/src/pages/PostWorkspace.tsx");
+    const layout = readSource("client/src/components/BlogLayout.tsx");
+
+    expect(createPost).toContain('persist("draft")');
+    expect(createPost).toContain('navigate(status === "draft" ? "/workspace"');
+    expect(workspace).toContain("trpc.posts.myPosts.useQuery");
+    expect(workspace).toContain("继续编辑");
+    expect(layout).toContain('go("/workspace")');
+  });
+
+  it("keeps the writing workspace focused on a publishable entry while only exposing recoverable drafts", () => {
     const createPost = readSource("client/src/pages/CreatePost.tsx");
     const markdownEditor = readSource("client/src/components/MarkdownEditor.tsx");
 
-    expect(createPost).toContain('status: "published"');
-    expect(createPost).not.toContain('submit("draft")');
-    expect(createPost).not.toContain("草稿仅保存在你的工作台");
+    expect(createPost).toContain('persist("published")');
+    expect(createPost).toContain('persist("draft")');
+    expect(createPost).toContain('navigate(status === "draft" ? "/workspace"');
     expect(markdownEditor).toContain("sm:min-h-[640px]");
     expect(markdownEditor).toContain("min-h-[440px]");
   });

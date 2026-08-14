@@ -11,11 +11,12 @@
 ### 文章发布与管理
 - [x] Markdown 编辑器集成
 - [x] 文章发布功能
-- [ ] 草稿保存功能
+- [x] 草稿保存功能（保存后跳转作者工作区，可继续编辑或发布）
 - [x] 文章删除功能
 - [x] 文章封面图上传（S3）
 - [x] 文章正文图片上传（S3）
 - [x] 作者可编辑自己已发布文章的标题、链接、正文、摘要、封面、分类和标签
+- [x] 作者工作区：查看自己的草稿与已发布文章，并进入编辑
 
 ### 文章列表与详情
 - [x] 文章列表分页展示
@@ -104,6 +105,7 @@
 ### Phase 8: Docker 部署
 - [x] docker-compose.yml 编写
 - [x] fnos 适配测试（Dockerfile/Compose 回归测试与 pnpm build 通过；当前 Sandbox 未安装 Docker）
+- [x] 保存 fnos 容器构建修复检查点并同步 GitHub（checkpoint d4739b9f；GitHub commit 57eed54）
 
 ### Phase 9: 版本提交与优化
 - [x] v1.0 版本提交到 GitHub

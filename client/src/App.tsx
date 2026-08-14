@@ -15,6 +15,7 @@ import About from "./pages/About";
 import AdminDashboard from "./pages/AdminDashboard";
 import GalleryPage from "./pages/GalleryPage";
 import GalleryDetail from "./pages/GalleryDetail";
+import PostWorkspace from "./pages/PostWorkspace";
 
 function Router() {
   return (
@@ -24,6 +25,7 @@ function Router() {
       <Route path="/posts/:slug" component={PostDetail} />
       <Route path="/create" component={CreatePost} />
       <Route path="/edit/:id" component={CreatePost} />
+      <Route path="/workspace" component={PostWorkspace} />
       <Route path="/archives" component={Archives} />
       <Route path="/tags" component={TagsPage} />
       <Route path="/gallery/:id" component={GalleryDetail} />

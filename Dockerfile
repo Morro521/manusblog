@@ -1,40 +1,16 @@
-# 构建阶段
-FROM node:22-alpine AS builder
+# MorroBlog 的 fnos 容器镜像：在镜像内构建前端与 Express 服务，运行时保留外部依赖。
+FROM node:22-slim
 
 WORKDIR /app
 
-# 复制 package 文件
-COPY package.json pnpm-lock.yaml ./
-
-# 安装依赖
-RUN npm install -g pnpm && pnpm install --frozen-lockfile
-
-# 复制源代码
+# 复制完整源码，确保 pnpm patches 在依赖安装前已进入构建上下文。
 COPY . .
 
-# 构建应用
-RUN pnpm build
+RUN npm install -g corepack@latest \
+  && corepack pnpm install --frozen-lockfile \
+  && corepack pnpm run build
 
-# 运行阶段
-FROM node:22-alpine
-
-WORKDIR /app
-
-# 安装 pnpm
-RUN npm install -g pnpm
-
-# 复制 package 文件
-COPY package.json pnpm-lock.yaml ./
-
-# 仅安装生产依赖
-RUN pnpm install --prod --frozen-lockfile
-
-# 从构建阶段复制构建结果
-COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/client/dist ./client/dist
-
-# 暴露端口
+ENV NODE_ENV=production
 EXPOSE 3000
 
-# 启动应用
 CMD ["node", "dist/index.js"]

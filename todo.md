@@ -56,7 +56,7 @@
 
 ### 部署与配置
 - [x] Docker 部署配置（docker-compose.yml）
-- [ ] fnos 系统适配
+- [x] fnos 系统适配（容器构建契约与生产构建通过；当前 Sandbox 未安装 Docker，未做镜像实跑）
 
 ## 开发阶段
 
@@ -103,7 +103,7 @@
 
 ### Phase 8: Docker 部署
 - [x] docker-compose.yml 编写
-- [ ] fnos 适配测试
+- [x] fnos 适配测试（Dockerfile/Compose 回归测试与 pnpm build 通过；当前 Sandbox 未安装 Docker）
 
 ### Phase 9: 版本提交与优化
 - [x] v1.0 版本提交到 GitHub

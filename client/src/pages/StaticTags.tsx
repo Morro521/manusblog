@@ -1,4 +1,3 @@
-/** 地层信号设计基线：标签从静态文章元数据派生，支持无服务端的主题导航。 */
 import { ArrowRight } from "lucide-react";
 import { Link } from "wouter";
 import { allTags, staticPosts } from "@/data/site";

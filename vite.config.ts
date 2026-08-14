@@ -1,4 +1,3 @@
-/** 纯 GitHub Pages 构建：不加载运行时插件、代理、API 或外部服务。 */
 import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
 import path from "node:path";

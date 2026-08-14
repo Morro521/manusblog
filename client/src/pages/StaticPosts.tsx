@@ -1,4 +1,4 @@
-/** 地层信号设计基线：文章索引在本地完成筛选和阅读路径，不请求数据库或第三方 API。 */
+// 内容量不大，筛选直接在浏览器里做。
 import { ArrowUpRight, Search, X } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Link } from "wouter";

@@ -1,7 +1,4 @@
-/**
- * 地层信号设计基线：固定的坐标式导航把个人主页、技术档案和 GitHub
- * 连接为一个可追溯的入口，避免使用任何运行时身份或服务端状态。
- */
+// 外链和站点导航都放这里，改地址时不用到处找。
 import { ExternalLink, Github, Menu, X } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { useState } from "react";

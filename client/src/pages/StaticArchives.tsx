@@ -1,4 +1,3 @@
-/** 地层信号设计基线：归档页以时间坐标呈现版本化文章记录，不使用远程查询。 */
 import { ArrowUpRight } from "lucide-react";
 import { Link } from "wouter";
 import { staticPosts } from "@/data/site";

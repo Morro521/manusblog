@@ -1,4 +1,3 @@
-/** 地层信号设计基线：首页将个人主页入口与已公开技术记录编排为可追溯的内容信号线。 */
 import { ArrowDownRight, ArrowUpRight, Github, ListFilter } from "lucide-react";
 import { Link } from "wouter";
 import { assetUrl, siteLinks, siteThemes, staticPosts } from "@/data/site";

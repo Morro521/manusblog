@@ -1,4 +1,3 @@
-/** 地层信号设计基线：本页只呈现经审阅的索引元信息和原文入口，不复制博客正文。 */
 import { ArrowLeft, ArrowUpRight, ExternalLink } from "lucide-react";
 import { Link, useRoute } from "wouter";
 import { staticPosts } from "@/data/site";

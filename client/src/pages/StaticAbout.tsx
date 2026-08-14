@@ -1,4 +1,3 @@
-/** 地层信号设计基线：关于页只使用两个公开 Morro 站点可核验的事实与出口。 */
 import { ArrowUpRight, Github } from "lucide-react";
 import { siteLinks } from "@/data/site";
 const facts = [["01", "PERSONAL SITE", "Morro 主页保留日常入口、博客与 GitHub 的访问路径。"], ["02", "TECHNICAL NOTES", "MorroBlog 公开记录 Cloudflare、Docker、NAS、Home Assistant、Hexo 与网络实验。"], ["03", "STATIC BY DESIGN", "本站不需要数据库、认证、对象存储或 API；内容与图像均随 GitHub 提交版本化。"], ["04", "READ THE SOURCE", "首页与索引只做定位，每条引用都保留到既有 MorroBlog 原文的出口。"]] as const;

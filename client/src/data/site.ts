@@ -1,7 +1,4 @@
-/**
- * 地层信号设计基线：此静态内容模型只记录已公开的 Morro 站点事实，
- * 让 GitHub Pages 构建无需数据库、认证、对象存储或服务端 API。
- */
+// 新文章先发原博客，这里补一条索引就行。
 export type StaticPost = {
   slug: string;
   title: string;

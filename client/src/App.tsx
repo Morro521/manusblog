@@ -1,7 +1,3 @@
-/**
- * 地层信号设计基线：以 Hash 路由保证 GitHub Pages 可直接刷新，
- * 路由和内容均只依赖仓库中的静态文件。
- */
 import { Route, Router, Switch } from "wouter";
 import { useHashLocation } from "wouter/use-hash-location";
 import SiteLayout from "./components/SiteLayout";

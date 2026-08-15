@@ -1,4 +1,4 @@
-import { eq, desc, and, isNull, or, gte } from "drizzle-orm";
+import { eq, desc, and, isNull, isNotNull, or, gte } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import { InsertUser, users, posts, comments, tags, categories, postTags, galleries, images, emailVerifications } from "../drizzle/schema";
 import { ENV } from './_core/env';
@@ -132,6 +132,19 @@ export async function touchUserLastSignedIn(id: number) {
   const db = await getDb();
   if (!db) return;
   await db.update(users).set({ lastSignedIn: new Date() }).where(eq(users.id, id));
+}
+
+export async function promoteConfiguredInitialAdmin(email: string | undefined) {
+  const normalizedEmail = email?.trim().toLowerCase();
+  if (!normalizedEmail) return;
+  const db = await getDb();
+  if (!db) return;
+
+  await db.update(users).set({ role: "admin" }).where(and(
+    eq(users.email, normalizedEmail),
+    eq(users.loginMethod, "email-password"),
+    isNotNull(users.emailVerifiedAt),
+  ));
 }
 
 export async function createEmailVerification(input: { email: string; codeHash: string; expiresAt: Date }) {

@@ -9,13 +9,14 @@ function formatDate(value: Date | string | null | undefined) {
 }
 
 export default function PostWorkspace() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, loading: isAuthLoading } = useAuth();
   const [, navigate] = useLocation();
   const { data, isLoading } = trpc.posts.myPosts.useQuery({ page: 1, limit: 100 }, { enabled: isAuthenticated });
   const posts = data?.data || [];
   const drafts = posts.filter((post: any) => post.status === "draft");
   const published = posts.filter((post: any) => post.status === "published");
 
+  if (isAuthLoading) return <div className="grid min-h-[55vh] place-items-center"><p className="editorial-kicker">OPENING YOUR INDEX…</p></div>;
   if (!isAuthenticated) return <div className="grid min-h-[55vh] place-items-center text-center"><div><p className="editorial-kicker">AUTHORIZATION REQUIRED</p><h1 className="display-title mt-4 text-4xl">先进入观测站，<br />再管理你的记录。</h1><Button onClick={() => navigate("/")} className="editorial-button mt-7 px-5">返回首页</Button></div></div>;
 
   const renderPosts = (entries: any[], mode: "draft" | "published") => entries.length ? <div>{entries.map((post: any, index: number) => <article key={post.id} className="grid gap-4 border-t border-white/[0.12] py-5 first:border-t-0 sm:grid-cols-[64px_minmax(0,1fr)_auto] sm:items-center"><span className="article-index">{String(index + 1).padStart(2, "0")}</span><div className="min-w-0"><p className="font-mono text-[10px] tracking-[0.1em] text-stone-600">{mode === "draft" ? "DRAFT / NOT PUBLIC" : `PUBLISHED / ${formatDate(post.publishedAt)}`}</p><h2 className="mt-2 truncate text-xl text-stone-200">{post.title}</h2><p className="mt-2 line-clamp-1 text-sm text-stone-500">{post.excerpt || (mode === "draft" ? "尚未添加摘要。" : "已发布记录。")}</p></div><div className="flex flex-wrap gap-2"><Button onClick={() => navigate(`/edit/${post.id}`)} variant="ghost" className="h-8 px-2 text-xs text-[#c6edf0] hover:bg-transparent hover:text-stone-100"><Pencil size={13} className="mr-1" />继续编辑</Button>{mode === "published" && <Button onClick={() => navigate(`/posts/${post.slug}`)} variant="ghost" className="h-8 px-2 text-xs text-stone-500 hover:bg-transparent hover:text-[#c6edf0]">阅读<ArrowUpRight size={13} className="ml-1" /></Button>}</div></article>)}</div> : <div className="border-t border-white/[0.12] py-10 text-center"><p className="text-sm text-stone-600">{mode === "draft" ? "没有待续写的草稿。" : "还没有发布的记录。"}</p></div>;

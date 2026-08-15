@@ -11,7 +11,7 @@ import { Check, ChevronLeft, FileText, Save, Send, Settings2, X } from "lucide-r
 const toSlug = (value: string) => value.trim().toLowerCase().replace(/[^a-z0-9\u4e00-\u9fff]+/g, "-").replace(/^-|-$/g, "");
 
 export default function CreatePost() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, loading: isAuthLoading } = useAuth();
   const [, navigate] = useLocation();
   const [, editParams] = useRoute("/edit/:id");
   const editId = Number(editParams?.id || 0);
@@ -63,6 +63,7 @@ export default function CreatePost() {
     createMutation.mutate({ title: title.trim(), slug: slug.trim(), content, excerpt: excerpt.trim() || undefined, coverImage: coverImage.trim() || undefined, categoryId, tagIds, status }, { onSuccess: () => navigate(status === "draft" ? "/workspace" : "/posts") });
   };
 
+  if (isAuthLoading) return <div className="grid min-h-[55vh] place-items-center"><p className="editorial-kicker">OPENING WRITING DESK…</p></div>;
   if (!isAuthenticated) return <div className="grid min-h-[55vh] place-items-center text-center"><div><p className="editorial-kicker">AUTHORIZATION REQUIRED</p><h1 className="display-title mt-4 text-4xl">先进入观测站，<br />再写下一条记录。</h1><Button onClick={() => navigate("/")} className="editorial-button mt-7 px-5">返回首页</Button></div></div>;
   if (isEditing && isEditLoading) return <div className="grid min-h-[55vh] place-items-center"><p className="editorial-kicker">OPENING ENTRY…</p></div>;
   if (isEditing && editError) return <div className="grid min-h-[55vh] place-items-center text-center"><div><p className="editorial-kicker">ENTRY UNAVAILABLE</p><h1 className="display-title mt-4 text-4xl">这篇记录无法编辑。</h1><p className="mt-4 text-sm text-stone-600">{editError.message}</p><Button onClick={() => navigate("/posts")} className="editorial-button mt-7 px-5">返回文章索引</Button></div></div>;

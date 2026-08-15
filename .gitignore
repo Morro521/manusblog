@@ -83,8 +83,3 @@ docker-compose.override.yml
 dist-ssr/
 *.local
 .project-config.json
-
-.project-config.json
-.manus-logs/
-node_modules/
-dist/

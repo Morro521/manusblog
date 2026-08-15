@@ -8,7 +8,8 @@ import rehypeHighlight from "rehype-highlight";
 import "highlight.js/styles/atom-one-dark.css";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { useLocation } from "wouter";
-import { ArrowLeft, ArrowUpRight, CalendarDays, CornerDownRight, Eye, MessageCircle, Pencil, Send, Trash2, UserRound, X } from "lucide-react";
+import { ArrowLeft, ArrowUpRight, CalendarDays, Clock3, CornerDownRight, Eye, MessageCircle, Pencil, Send, Trash2, UserRound, X } from "lucide-react";
+import { formatReadingTime } from "@/lib/readingTime";
 
 const fallbackCover = "/manus-storage/observatory-night_fc4b375d.jpg";
 
@@ -58,7 +59,7 @@ export default function PostDetail() {
       <header className="grid border-y border-white/[0.15] lg:grid-cols-12">
         <div className="flex flex-col justify-between px-1 py-10 sm:px-4 sm:py-14 lg:col-span-7 lg:px-0 lg:pr-14">
           <div><p className="editorial-kicker">{post.category?.name || "FIELD NOTE"} / {post.status.toUpperCase()}</p><h1 className="display-title mt-6 text-4xl sm:text-5xl lg:text-6xl">{post.title}</h1>{post.excerpt && <p className="copy-lede mt-7 max-w-2xl">{post.excerpt}</p>}</div>
-          <div className="mt-10 flex flex-wrap gap-x-5 gap-y-3 border-t border-white/[0.12] pt-4 font-mono text-[10px] tracking-[0.1em] text-stone-500"><span className="flex items-center gap-1.5"><CalendarDays size={13} /> {dateLabel}</span><span className="flex items-center gap-1.5"><Eye size={13} /> {post.viewCount || 0} VIEWS</span><span className="flex items-center gap-1.5"><MessageCircle size={13} /> {commentCount} COMMENTS</span></div>
+          <div className="mt-10 flex flex-wrap gap-x-5 gap-y-3 border-t border-white/[0.12] pt-4 font-mono text-[10px] tracking-[0.1em] text-stone-500"><span className="flex items-center gap-1.5"><CalendarDays size={13} /> {dateLabel}</span><span className="flex items-center gap-1.5" aria-label={`预计 ${formatReadingTime(post.content)}`}><Clock3 size={13} /> {formatReadingTime(post.content)}</span><span className="flex items-center gap-1.5"><Eye size={13} /> {post.viewCount || 0} VIEWS</span><span className="flex items-center gap-1.5"><MessageCircle size={13} /> {commentCount} COMMENTS</span></div>
         </div>
         <div className="article-cover min-h-[300px] lg:col-span-5"><img src={post.coverImage || fallbackCover} alt={post.title} fetchPriority="high" /></div>
       </header>

@@ -34,6 +34,7 @@ describe("visual readability and language contract", () => {
     const auth = readSource("client/src/pages/AuthPage.tsx");
     const editor = readSource("client/src/components/MarkdownEditor.tsx");
     const workspace = readSource("client/src/pages/PostWorkspace.tsx");
+    const admin = readSource("client/src/pages/AdminDashboard.tsx");
 
     expect(home).toContain("写给还在");
     expect(posts).toContain("读点真的");
@@ -45,6 +46,12 @@ describe("visual readability and language contract", () => {
     expect(workspace).not.toContain("AUTHOR WORKSPACE / PRIVATE INDEX");
     expect(workspace).not.toContain("DRAFT SHELF");
     expect(workspace).not.toContain("PUBLISHED INDEX");
+    expect(admin).toContain("管理后台");
+    expect(admin).toContain("正在验证管理员权限…");
+    expect(admin).toContain("还没有文章");
+    expect(admin).toContain("rounded-[1.6rem]");
+    expect(admin).not.toContain("ADMIN CONSOLE / OWNER CLEARANCE");
+    expect(admin).not.toContain("RESTRICTED CONSOLE");
     expect(`${home}\n${posts}\n${auth}`).not.toContain("ARCHIVE INDEX / VOL. 01");
     expect(`${home}\n${posts}\n${auth}`).not.toContain("PRIVATE ACCESS / ISSUE 01");
   });

@@ -33,11 +33,18 @@ describe("visual readability and language contract", () => {
     const posts = readSource("client/src/pages/PostsList.tsx");
     const auth = readSource("client/src/pages/AuthPage.tsx");
     const editor = readSource("client/src/components/MarkdownEditor.tsx");
+    const workspace = readSource("client/src/pages/PostWorkspace.tsx");
 
     expect(home).toContain("写给还在");
     expect(posts).toContain("读点真的");
     expect(auth).toContain("用自己的");
     expect(editor).toContain("预览会显示在这里");
+    expect(workspace).toContain("我的文章");
+    expect(workspace).toContain("还没有待续写的草稿。");
+    expect(workspace).toContain("rounded-[1.6rem]");
+    expect(workspace).not.toContain("AUTHOR WORKSPACE / PRIVATE INDEX");
+    expect(workspace).not.toContain("DRAFT SHELF");
+    expect(workspace).not.toContain("PUBLISHED INDEX");
     expect(`${home}\n${posts}\n${auth}`).not.toContain("ARCHIVE INDEX / VOL. 01");
     expect(`${home}\n${posts}\n${auth}`).not.toContain("PRIVATE ACCESS / ISSUE 01");
   });

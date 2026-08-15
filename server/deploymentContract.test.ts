@@ -13,7 +13,7 @@ describe("fnos deployment contract", () => {
     expect(dockerfile).toContain("COPY . .");
     expect(dockerfile).toContain("corepack pnpm install --frozen-lockfile");
     expect(dockerfile).toContain("corepack pnpm run build");
-    expect(dockerfile).toContain('CMD ["node", "dist/index.js"]');
+    expect(dockerfile).toContain("pnpm drizzle-kit migrate && node dist/index.js");
     expect(dockerfile).not.toContain("/app/client/dist");
   });
 
@@ -23,5 +23,14 @@ describe("fnos deployment contract", () => {
     expect(compose).toContain("@mysql:3306/");
     expect(compose).toContain("condition: service_healthy");
     expect(compose).toContain('"3000:3000"');
+  });
+
+  it("passes SMTP credentials only to the server environment", () => {
+    const compose = readProjectFile("docker-compose.yml");
+
+    expect(compose).toContain("SMTP_HOST: ${SMTP_HOST}");
+    expect(compose).toContain("SMTP_PASS: ${SMTP_PASS}");
+    expect(compose).toContain("SMTP_FROM: ${SMTP_FROM}");
+    expect(compose).toContain("INITIAL_ADMIN_EMAIL: ${INITIAL_ADMIN_EMAIL}");
   });
 });

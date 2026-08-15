@@ -1,6 +1,6 @@
 const stack = [
   ["01", "WRITING SURFACE", "React 19 · TypeScript · Tailwind CSS 4"],
-  ["02", "SERVICE LAYER", "Express · tRPC · Manus OAuth"],
+  ["02", "SERVICE LAYER", "Express · tRPC · 邮箱验证码认证"],
   ["03", "PERSISTENCE", "MySQL · Drizzle ORM · S3 Storage"],
   ["04", "DEPLOYMENT", "Docker Compose · fnos"],
 ];

@@ -16,6 +16,7 @@ import AdminDashboard from "./pages/AdminDashboard";
 import GalleryPage from "./pages/GalleryPage";
 import GalleryDetail from "./pages/GalleryDetail";
 import PostWorkspace from "./pages/PostWorkspace";
+import AuthPage from "./pages/AuthPage";
 
 function Router() {
   return (
@@ -32,6 +33,7 @@ function Router() {
       <Route path="/gallery" component={GalleryPage} />
       <Route path="/about" component={About} />
       <Route path="/admin" component={AdminDashboard} />
+      <Route path="/login" component={AuthPage} />
       <Route path="/404" component={NotFound} />
       <Route component={NotFound} />
     </Switch>

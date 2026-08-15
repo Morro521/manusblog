@@ -15,6 +15,13 @@
       "when": 1784119401732,
       "tag": "0001_slimy_maestro",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1786754515796,
+      "tag": "0002_empty_mojo",
+      "breakpoints": true
     }
   ]
 }

@@ -13,4 +13,4 @@ RUN npm install -g corepack@latest \
 ENV NODE_ENV=production
 EXPOSE 3000
 
-CMD ["node", "dist/index.js"]
+CMD ["sh", "-c", "pnpm drizzle-kit migrate && node dist/index.js"]

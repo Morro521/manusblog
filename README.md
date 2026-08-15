@@ -5,7 +5,8 @@
 ## ✨ 核心功能
 
 ### 用户与认证
-- 用户注册、登录、登出
+- 邮箱验证码注册、密码登录、登出
+- 163 SMTP 验证码邮件与频率限制
 - 管理员与普通用户角色区分
 - 权限管理系统
 
@@ -27,10 +28,9 @@
 - 实时互动反馈
 
 ### 视觉设计
-- 沉浸式宇宙美学主题（午夜蓝 + 紫罗兰渐变）
-- 樱花粒子动效
-- Live2D 看板娘占位区
-- 自动播放背景音乐
+  - 午夜天文台 × 日系独立技术刊物视觉语言
+  - 墨黑纸感、冰蓝信号色、编辑型排版与非对称网格
+  - 手动触发、来源可追溯的环境音
 - 完全响应式布局
 
 ### 管理后台
@@ -47,7 +47,7 @@
 | **数据库** | MySQL 8.0 |
 | **存储** | S3（文件存储） |
 | **部署** | Docker + fnos |
-| **认证** | Manus OAuth |
+| **认证** | 邮箱验证码 + 密码哈希 + JWT Cookie 会话 |
 
 ## 📦 快速开始
 
@@ -102,14 +102,15 @@ MYSQL_PASSWORD=your-db-password
 JWT_SECRET=your-jwt-secret
 NODE_ENV=production
 
-# OAuth（Manus）
-VITE_APP_ID=your-app-id
-OAUTH_SERVER_URL=https://api.manus.im
-VITE_OAUTH_PORTAL_URL=https://manus.im/login
+# 邮件验证码（163 SMTP 示例）
+SMTP_HOST=smtp.163.com
+SMTP_PORT=465
+SMTP_USER=your-mail@163.com
+SMTP_PASS=your-163-smtp-authorization-code
+SMTP_FROM="MorroBlog <your-mail@163.com>"
 
-# 所有者信息
-OWNER_OPEN_ID=your-owner-id
-OWNER_NAME=Morro
+# 首个管理员：填写与你用于注册的收件邮箱，不要填写 SMTP 发件邮箱
+INITIAL_ADMIN_EMAIL=your-admin-registration-email@example.com
 ```
 
 ## 📁 项目结构
@@ -184,16 +185,15 @@ MorroBlog/
 - 发光青色外描边标题
 - 行星球体与镜头光晕效果
 
-### 交互动效
-- 樱花粒子持续飘落
-- 平滑过渡与悬停效果
-- 响应式导航菜单
-- 自动播放背景音乐
+### 交互与可访问性
+- 简洁的平滑过渡与键盘可达导航
+- 桌面与移动端独立的信息密度和编辑操作布局
+- 环境音仅在访客主动点击后播放
 
 ## 🔐 安全性
 
-- OAuth 2.0 认证
-- JWT 会话管理
+- 邮箱验证码注册，验证码哈希存储、10 分钟有效、60 秒发送冷却和每小时频率限制
+- bcrypt 密码哈希与 httpOnly JWT Cookie 会话
 - 评论审核机制
 - 管理员权限控制
 - SQL 注入防护（Drizzle ORM）
@@ -253,7 +253,7 @@ pnpm drizzle-kit migrate
 
 4. **访问应用**
    - 打开浏览器访问 `http://your-fnos-ip:3000`
-   - 使用 Manus OAuth 登录
+   - 使用邮箱注册：获取验证码、验证邮箱并设置密码
 
 ## 📊 监控与维护
 
@@ -281,7 +281,7 @@ docker-compose up -d
 | 问题 | 解决方案 |
 |------|--------|
 | 数据库连接失败 | 检查 `DATABASE_URL` 环境变量 |
-| OAuth 登录失败 | 验证 `VITE_APP_ID` 和 `OAUTH_SERVER_URL` |
+| 收不到验证码 | 检查 `SMTP_HOST`、`SMTP_PORT`、`SMTP_USER`、`SMTP_PASS` 与垃圾邮件箱 |
 | 文件上传失败 | 检查 S3 存储配置 |
 | 页面加载缓慢 | 检查网络连接和数据库性能 |
 

@@ -1,6 +1,6 @@
-import { eq, desc, and, isNull, or } from "drizzle-orm";
+import { eq, desc, and, isNull, or, gte } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users, posts, comments, tags, categories, postTags, galleries, images } from "../drizzle/schema";
+import { InsertUser, users, posts, comments, tags, categories, postTags, galleries, images, emailVerifications } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -99,10 +99,89 @@ export async function getUserById(id: number) {
   return result.length > 0 ? result[0] : undefined;
 }
 
+export async function getUserByEmail(email: string) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select().from(users).where(eq(users.email, email)).limit(1);
+  return result[0];
+}
+
+export async function createLocalUser(input: {
+  openId: string;
+  email: string;
+  passwordHash: string;
+  name?: string | null;
+  role?: "user" | "admin";
+}) {
+  const db = await getDb();
+  if (!db) throw new Error("Database unavailable");
+  await db.insert(users).values({
+    openId: input.openId,
+    email: input.email,
+    passwordHash: input.passwordHash,
+    emailVerifiedAt: new Date(),
+    name: input.name ?? null,
+    loginMethod: "email-password",
+    role: input.role ?? "user",
+    lastSignedIn: new Date(),
+  });
+  return getUserByEmail(input.email);
+}
+
+export async function touchUserLastSignedIn(id: number) {
+  const db = await getDb();
+  if (!db) return;
+  await db.update(users).set({ lastSignedIn: new Date() }).where(eq(users.id, id));
+}
+
+export async function createEmailVerification(input: { email: string; codeHash: string; expiresAt: Date }) {
+  const db = await getDb();
+  if (!db) throw new Error("Database unavailable");
+  await db.insert(emailVerifications).values({
+    email: input.email,
+    purpose: "register",
+    codeHash: input.codeHash,
+    expiresAt: input.expiresAt,
+  });
+}
+
+export async function getLatestEmailVerification(email: string) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select().from(emailVerifications)
+    .where(and(eq(emailVerifications.email, email), eq(emailVerifications.purpose, "register"), isNull(emailVerifications.usedAt)))
+    .orderBy(desc(emailVerifications.createdAt))
+    .limit(1);
+  return result[0];
+}
+
+export async function countRecentEmailVerifications(email: string, since: Date) {
+  const db = await getDb();
+  if (!db) return 0;
+  const result = await db.select().from(emailVerifications)
+    .where(and(eq(emailVerifications.email, email), eq(emailVerifications.purpose, "register"), gte(emailVerifications.createdAt, since)));
+  return result.length;
+}
+
+export async function incrementEmailVerificationAttempts(id: number) {
+  const db = await getDb();
+  if (!db) return;
+  const record = await db.select({ attempts: emailVerifications.attempts }).from(emailVerifications).where(eq(emailVerifications.id, id)).limit(1);
+  if (!record[0]) return;
+  await db.update(emailVerifications).set({ attempts: record[0].attempts + 1 }).where(eq(emailVerifications.id, id));
+}
+
+export async function markEmailVerificationUsed(id: number) {
+  const db = await getDb();
+  if (!db) return;
+  await db.update(emailVerifications).set({ usedAt: new Date() }).where(eq(emailVerifications.id, id));
+}
+
 export async function getAllUsers(limit: number = 50, offset: number = 0) {
   const db = await getDb();
   if (!db) return [];
-  return db.select().from(users).orderBy(desc(users.lastSignedIn)).limit(limit).offset(offset);
+  const result = await db.select().from(users).orderBy(desc(users.lastSignedIn)).limit(limit).offset(offset);
+  return result.map(({ passwordHash: _passwordHash, ...user }) => user);
 }
 
 // ============ 文章相关查询 ============

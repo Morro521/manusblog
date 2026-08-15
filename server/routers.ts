@@ -9,12 +9,63 @@ import { getDb } from "./db";
 import { posts, comments, tags, categories, postTags, galleries, images, InsertPost, InsertComment, InsertTag, InsertCategory, InsertImage, InsertGallery } from "../drizzle/schema";
 import { eq, desc, inArray } from "drizzle-orm";
 import { storagePut } from "./storage";
+import { LocalAuthError, loginWithEmail, registerWithEmail, requestRegistrationCode } from "./localAuth";
+
+function safeUser<T extends { passwordHash?: string | null } | null>(user: T) {
+  if (!user) return null;
+  const { passwordHash: _passwordHash, ...rest } = user;
+  return rest;
+}
+
+function authError(error: unknown): never {
+  if (error instanceof LocalAuthError) throw new TRPCError({ code: error.code, message: error.message });
+  console.error("[LocalAuth] Unexpected error", error);
+  throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "认证服务暂时不可用" });
+}
 
 export const appRouter = router({
   system: systemRouter,
   
   auth: router({
-    me: publicProcedure.query(opts => opts.ctx.user),
+    me: publicProcedure.query(opts => safeUser(opts.ctx.user)),
+    requestRegistrationCode: publicProcedure
+      .input(z.object({ email: z.string().trim().email() }))
+      .mutation(async ({ input }) => {
+        try {
+          return await requestRegistrationCode(input.email);
+        } catch (error) {
+          return authError(error);
+        }
+      }),
+    register: publicProcedure
+      .input(z.object({
+        email: z.string().trim().email(),
+        code: z.string().trim().regex(/^\d{6}$/),
+        password: z.string().min(10).max(72),
+        name: z.string().trim().min(1).max(80).optional(),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        try {
+          const result = await registerWithEmail(input);
+          const cookieOptions = getSessionCookieOptions(ctx.req);
+          ctx.res.cookie(COOKIE_NAME, result.token, { ...cookieOptions, maxAge: 1000 * 60 * 60 * 24 * 7 });
+          return { user: safeUser(result.user) };
+        } catch (error) {
+          return authError(error);
+        }
+      }),
+    login: publicProcedure
+      .input(z.object({ email: z.string().trim().email(), password: z.string().min(1).max(72) }))
+      .mutation(async ({ input, ctx }) => {
+        try {
+          const result = await loginWithEmail(input.email, input.password);
+          const cookieOptions = getSessionCookieOptions(ctx.req);
+          ctx.res.cookie(COOKIE_NAME, result.token, { ...cookieOptions, maxAge: 1000 * 60 * 60 * 24 * 7 });
+          return { user: safeUser(result.user) };
+        } catch (error) {
+          return authError(error);
+        }
+      }),
     logout: publicProcedure.mutation(({ ctx }) => {
       const cookieOptions = getSessionCookieOptions(ctx.req);
       ctx.res.clearCookie(COOKIE_NAME, { ...cookieOptions, maxAge: -1 });

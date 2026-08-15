@@ -29,12 +29,15 @@ describe("public interaction contract", () => {
     expect(sources.join("\n")).not.toMatch(/<article[^>]+onClick=/);
   });
 
-  it("honors the tag query used by detail and tag-index navigation", () => {
+  it("honors the tag query used by detail and tag-index navigation through the shared URL state module", () => {
     const postsList = readSource("client/src/pages/PostsList.tsx");
+    const postFilters = readSource("client/src/lib/postFilters.ts");
 
-    expect(postsList).toContain("const urlParams = new URLSearchParams(queryString)");
-    expect(postsList).toContain("const tagFromUrl = urlParams.get(\"tag\")");
+    expect(postsList).toContain("parsePostIndexFilters(queryString)");
+    expect(postsList).toContain("buildPostIndexLocation");
     expect(postsList).toContain("useState<string | null>(tagFromUrl)");
+    expect(postFilters).toContain('params.get("tag")?.trim() || null');
+    expect(postFilters).toContain('params.set("tag", tagSlug)');
   });
 
   it("keeps category constraints in the tag-filter query branch and its matching total", () => {

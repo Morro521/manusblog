@@ -83,10 +83,11 @@ export const appRouter = router({
         limit: z.number().default(10),
         tagSlug: z.string().min(1).optional(),
         categoryId: z.number().int().positive().optional(),
+        search: z.string().trim().min(1).max(120).optional(),
       }))
       .query(async ({ input }) => {
         const offset = (input.page - 1) * input.limit;
-        const filters = { tagSlug: input.tagSlug, categoryId: input.categoryId };
+        const filters = { tagSlug: input.tagSlug, categoryId: input.categoryId, search: input.search };
         const [posts_data, total] = await Promise.all([
           db.getPublishedPosts(input.limit, offset, filters),
           db.getPostCount('published', filters),

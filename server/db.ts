@@ -1,4 +1,4 @@
-import { eq, desc, and, isNull, isNotNull, or, gte } from "drizzle-orm";
+import { eq, desc, and, isNull, isNotNull, or, gte, like } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import { InsertUser, users, posts, comments, tags, categories, postTags, galleries, images, emailVerifications } from "../drizzle/schema";
 import { ENV } from './_core/env';
@@ -202,6 +202,7 @@ export async function getAllUsers(limit: number = 50, offset: number = 0) {
 export type PublishedPostFilters = {
   tagSlug?: string;
   categoryId?: number;
+  search?: string;
 };
 
 export async function getPublishedPosts(limit: number = 10, offset: number = 0, filters: PublishedPostFilters = {}) {
@@ -211,6 +212,7 @@ export async function getPublishedPosts(limit: number = 10, offset: number = 0, 
   if (filters.tagSlug) {
     const conditions = [eq(tags.slug, filters.tagSlug), eq(posts.status, 'published')];
     if (filters.categoryId) conditions.push(eq(posts.categoryId, filters.categoryId));
+    if (filters.search) conditions.push(or(like(posts.title, `%${filters.search}%`), like(posts.excerpt, `%${filters.search}%`))!);
     const rows = await db
       .select({ post: posts })
       .from(postTags)
@@ -225,6 +227,7 @@ export async function getPublishedPosts(limit: number = 10, offset: number = 0, 
 
   const conditions = [eq(posts.status, 'published')];
   if (filters.categoryId) conditions.push(eq(posts.categoryId, filters.categoryId));
+  if (filters.search) conditions.push(or(like(posts.title, `%${filters.search}%`), like(posts.excerpt, `%${filters.search}%`))!);
   
   return db
     .select()
@@ -354,6 +357,7 @@ export async function getPostCount(status: string = 'published', filters: Publis
   if (filters.tagSlug) {
     const conditions = [eq(tags.slug, filters.tagSlug), eq(posts.status, status as any)];
     if (filters.categoryId) conditions.push(eq(posts.categoryId, filters.categoryId));
+    if (filters.search) conditions.push(or(like(posts.title, `%${filters.search}%`), like(posts.excerpt, `%${filters.search}%`))!);
     const result = await db
       .select({ id: posts.id })
       .from(postTags)
@@ -365,6 +369,7 @@ export async function getPostCount(status: string = 'published', filters: Publis
 
   const conditions = [eq(posts.status, status as any)];
   if (filters.categoryId) conditions.push(eq(posts.categoryId, filters.categoryId));
+  if (filters.search) conditions.push(or(like(posts.title, `%${filters.search}%`), like(posts.excerpt, `%${filters.search}%`))!);
   
   const result = await db
     .select()

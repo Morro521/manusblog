@@ -12,7 +12,7 @@ describe("public interaction contract", () => {
     expect(layout).not.toContain("LIVE2D BAY");
     expect(layout).not.toContain("尚未接入角色资源");
     expect(layout).toContain("onError={() => { setAudioPlaying(false); setAudioUnavailable(true); }}");
-    expect(layout).toContain("AMBIENT OFFLINE");
+    expect(layout).toContain("环境音不可用");
   });
 
   it("uses keyboard-reachable buttons for every public card that routes to a detail page", () => {

@@ -2,24 +2,30 @@ import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/NotFound";
 import { Route, Switch } from "wouter";
+import { lazy, Suspense } from "react";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import Home from "./pages/Home";
 import BlogLayout from "./components/BlogLayout";
-import PostsList from "./pages/PostsList";
-import PostDetail from "./pages/PostDetail";
-import CreatePost from "./pages/CreatePost";
-import Archives from "./pages/Archives";
-import TagsPage from "./pages/TagsPage";
-import About from "./pages/About";
-import AdminDashboard from "./pages/AdminDashboard";
-import GalleryPage from "./pages/GalleryPage";
-import GalleryDetail from "./pages/GalleryDetail";
-import PostWorkspace from "./pages/PostWorkspace";
-import AuthPage from "./pages/AuthPage";
+const PostsList = lazy(() => import("./pages/PostsList"));
+const PostDetail = lazy(() => import("./pages/PostDetail"));
+const CreatePost = lazy(() => import("./pages/CreatePost"));
+const Archives = lazy(() => import("./pages/Archives"));
+const TagsPage = lazy(() => import("./pages/TagsPage"));
+const About = lazy(() => import("./pages/About"));
+const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
+const GalleryPage = lazy(() => import("./pages/GalleryPage"));
+const GalleryDetail = lazy(() => import("./pages/GalleryDetail"));
+const PostWorkspace = lazy(() => import("./pages/PostWorkspace"));
+const AuthPage = lazy(() => import("./pages/AuthPage"));
+
+function PageLoading() {
+  return <div className="grid min-h-[45vh] place-items-center"><div className="rounded-2xl border border-white/[0.13] bg-[#202630]/78 px-5 py-4 text-center shadow-lg shadow-black/10"><p className="text-sm text-slate-200">正在打开页面…</p><p className="mt-1 text-xs text-slate-400">内容马上就好。</p></div></div>;
+}
 
 function Router() {
   return (
+    <Suspense fallback={<PageLoading />}>
     <Switch>
       <Route path="/" component={Home} />
       <Route path="/posts" component={PostsList} />
@@ -37,6 +43,7 @@ function Router() {
       <Route path="/404" component={NotFound} />
       <Route component={NotFound} />
     </Switch>
+    </Suspense>
   );
 }
 

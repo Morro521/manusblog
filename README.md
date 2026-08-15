@@ -67,6 +67,12 @@ pnpm check
 pnpm test
 ```
 
+默认测试套件不会频繁向 163 SMTP 发起 TLS 登录，以避免上游临时认证限制导致与代码无关的失败。部署前需要人工核验 SMTP 凭据时，可显式执行：
+
+```bash
+RUN_SMTP_INTEGRATION=true pnpm vitest run server/smtpConnection.test.ts
+```
+
 访问 `http://localhost:3000` 查看应用。
 
 ### Docker 部署（fnos）

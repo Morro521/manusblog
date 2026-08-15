@@ -5,6 +5,7 @@ const host = process.env.SMTP_HOST;
 const port = Number(process.env.SMTP_PORT ?? "465");
 const username = process.env.SMTP_USER;
 const password = process.env.SMTP_PASS;
+const describeSmtpIntegration = process.env.RUN_SMTP_INTEGRATION === "true" ? describe : describe.skip;
 
 function verifySmtpLogin(): Promise<string> {
   if (!host || !username || !password) {
@@ -60,7 +61,7 @@ function verifySmtpLogin(): Promise<string> {
   });
 }
 
-describe("163 SMTP credentials", () => {
+describeSmtpIntegration("163 SMTP credentials", () => {
   it("authenticates over TLS without sending a message", async () => {
     await expect(verifySmtpLogin()).resolves.toContain("235");
   }, 20_000);

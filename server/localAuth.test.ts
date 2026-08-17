@@ -61,7 +61,13 @@ describe("site-owned email authentication", () => {
     const mail = mailMocks.sendMail.mock.calls[0]?.[0];
     const code = mail?.text.match(/(\d{6})/)?.[1];
     expect(mail?.to).toBe("reader@example.com");
+    expect(mail?.subject).toBe("MorroBlog · 验证你的邮箱");
     expect(code).toMatch(/^\d{6}$/);
+    expect(mail?.html).toContain("验证你的邮箱");
+    expect(mail?.html).toContain(code);
+    expect(mail?.html).toContain("10 分钟");
+    expect(mail?.html).toContain("不要把验证码告诉任何人");
+    expect(mail?.html).toContain("不会通过邮件、私信或客服渠道向你索取验证码或密码");
     expect(dbMocks.createEmailVerification).toHaveBeenCalledWith(expect.objectContaining({
       email: "reader@example.com",
       codeHash: hash("reader@example.com", code!),

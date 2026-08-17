@@ -58,7 +58,7 @@ describe("email auth router", () => {
 
     expect(result.user).not.toHaveProperty("passwordHash");
     expect(cookies[0]).toMatchObject({ name: "app_session_id", value: "local-session-token" });
-    expect(cookies[0]?.options).toMatchObject({ httpOnly: true, path: "/", sameSite: "none", secure: true });
+    expect(cookies[0]?.options).toMatchObject({ httpOnly: true, path: "/", sameSite: "lax", secure: true });
   });
 
   it("delegates code requests without exposing SMTP configuration", async () => {

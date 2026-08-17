@@ -8,11 +8,12 @@ const readSource = (relativePath: string) => fs.readFileSync(path.join(projectRo
 describe("public interaction contract", () => {
   it("removes reserved Live2D messaging and deactivates ambient control after media failure", () => {
     const layout = readSource("client/src/components/BlogLayout.tsx");
+    const fullPlayer = readSource("client/src/components/FullMusicPlayer.tsx");
 
     expect(layout).not.toContain("LIVE2D BAY");
     expect(layout).not.toContain("尚未接入角色资源");
     expect(layout).toContain("onError={() => { setAudioPlaying(false); setAudioUnavailable(true); }}");
-    expect(layout).toContain("环境音不可用");
+    expect(fullPlayer).toContain("音乐暂时不可用");
   });
 
   it("uses keyboard-reachable buttons for every public card that routes to a detail page", () => {
@@ -46,7 +47,7 @@ describe("public interaction contract", () => {
     expect(dbSource.match(/if \(filters\.tagSlug\)[\s\S]*?if \(filters\.categoryId\) conditions\.push\(eq\(posts\.categoryId, filters\.categoryId\)\);/g)?.length).toBe(2);
   });
 
-  it("only exposes draft persistence alongside a concrete author workspace recovery path", () => {
+  it("keeps draft recovery concrete without exposing an author shortcut in visitor-first navigation", () => {
     const createPost = readSource("client/src/pages/CreatePost.tsx");
     const workspace = readSource("client/src/pages/PostWorkspace.tsx");
     const layout = readSource("client/src/components/BlogLayout.tsx");
@@ -55,7 +56,8 @@ describe("public interaction contract", () => {
     expect(createPost).toContain('navigate(status === "draft" ? "/workspace"');
     expect(workspace).toContain("trpc.posts.myPosts.useQuery");
     expect(workspace).toContain("继续编辑");
-    expect(layout).toContain('go("/workspace")');
+    expect(layout).not.toContain('go("/workspace")');
+    expect(layout).toContain('const isAdmin = isAuthenticated && user?.role === "admin"');
   });
 
   it("keeps the writing workspace focused on a publishable entry while only exposing recoverable drafts", () => {

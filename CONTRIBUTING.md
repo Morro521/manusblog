@@ -1,6 +1,6 @@
 # 🤝 贡献指南
 
-感谢你对 **ManusBlob** 的关注和支持！我们欢迎各种形式的贡献，包括 Bug 报告、功能建议、代码改进和文档完善。
+感谢你对 **MorroBlog** 的关注和支持！我们欢迎 Bug 报告、功能建议、代码改进和文档完善。请勿在 issue、提交记录、截图或测试夹具中提交真实凭据、用户数据或未取得授权的媒体素材。
 
 ## 📋 目录
 
@@ -93,8 +93,8 @@
 
 5. **配置环境变量**
    ```bash
-   cp .env.example .env.local
-   # 编辑 .env.local 填入必要的配置
+   cp .env.example .env
+   # 编辑 .env，填入必要的配置；不要提交该文件
    ```
 
 6. **启动开发服务器**
@@ -128,7 +128,7 @@ git checkout -b feature/your-feature-name
 ### TypeScript
 
 - 所有代码必须使用 TypeScript
-- 避免使用 `any` 类型，使用具体的类型定义
+- 新增或修改的代码应避免不必要的 `any`，并为可复用边界提供清晰类型
 - 为函数参数和返回值添加类型注解
 
 ```typescript
@@ -178,7 +178,7 @@ export function CustomButton({ label, onClick, disabled }: ButtonProps) {
 
 ```typescript
 // ✅ 好的例子
-<div className="bg-slate-800 border border-purple-500/20 rounded-lg p-4">
+<div className="border border-white/20 rounded-xl p-4">
   {/* 内容 */}
 </div>
 
@@ -298,7 +298,7 @@ describe("calculateSubscriptionFee", () => {
    ```bash
    pnpm check    # TypeScript 类型检查
    pnpm test     # 运行测试
-   pnpm format   # 代码格式化
+  pnpm build    # 生产构建
    ```
 
 3. **提交更改**
@@ -366,6 +366,8 @@ git push origin feature/your-feature-name
 - [ ] Commit 消息遵循规范
 - [ ] 没有合并冲突
 - [ ] 没有调试代码（console.log 等）
+- [ ] 不包含真实凭据、真实用户数据或未经授权的媒体
+- [ ] 涉及权限、输入、上传或公开接口时，已补充对应 Vitest 回归测试
 
 ## 报告 Bug
 

@@ -43,7 +43,9 @@ export function getSessionCookieOptions(
   return {
     httpOnly: true,
     path: "/",
-    sameSite: secure ? "none" : "lax",
+    // The site no longer uses a cross-site OAuth callback. Lax protects both
+    // HTTPS and direct fnos/LAN deployments from ambient cross-site requests.
+    sameSite: "lax",
     secure,
   };
 }

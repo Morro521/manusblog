@@ -85,8 +85,9 @@ async function sendVerificationEmail(email: string, code: string) {
   await transporter().sendMail({
     from: process.env.SMTP_FROM ?? process.env.SMTP_USER,
     to: email,
-    subject: "MorroBlog 注册验证码",
-    text: `你的 MorroBlog 注册验证码是：${code}\n\n验证码 10 分钟内有效。若不是你本人操作，请忽略此邮件。`,
+    subject: "MorroBlog · 验证你的邮箱",
+    text: `MorroBlog 邮箱验证\n\n你好：\n\n你正在为 MorroBlog 创建账号。请在注册页面输入以下验证码：\n\n${code}\n\n验证码将在 10 分钟后失效。\n\n为保护你的账号安全，请不要把验证码告诉任何人。MorroBlog 不会通过邮件、私信或客服渠道向你索取验证码或密码。\n\n如果这不是你本人发起的注册，请直接忽略本邮件。`,
+    html: `<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"></head><body style="margin:0;background:#eef1f3;color:#18242d;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif"><main style="max-width:600px;margin:0 auto;padding:48px 24px"><section style="background:#ffffff;padding:44px 40px;box-shadow:0 12px 32px rgba(19,36,48,.08)"><p style="margin:0 0 28px;color:#4a606b;font-size:12px;letter-spacing:.14em">MORROBLOG · 邮箱验证</p><h1 style="margin:0;color:#17232c;font-size:30px;line-height:1.25">验证你的邮箱</h1><p style="margin:28px 0 0;font-size:16px;line-height:1.8">你好，</p><p style="margin:8px 0 0;font-size:16px;line-height:1.8">你正在为 MorroBlog 创建账号。请在注册页面输入下面的验证码：</p><div style="margin:28px 0;padding:20px 24px;background:#eef4f4;border-left:3px solid #86bfc0;color:#17232c;font-size:32px;font-weight:700;letter-spacing:.22em;text-align:center">${code}</div><p style="margin:0;font-size:14px;line-height:1.8;color:#50626b">验证码将在 <strong style="color:#17232c">10 分钟</strong> 后失效。</p><hr style="border:0;border-top:1px solid #e4e8e9;margin:32px 0"><p style="margin:0;font-size:13px;line-height:1.8;color:#65757d">为保护你的账号安全，请不要把验证码告诉任何人。MorroBlog 不会通过邮件、私信或客服渠道向你索取验证码或密码。</p><p style="margin:20px 0 0;font-size:13px;line-height:1.8;color:#65757d">如果这不是你本人发起的注册，请直接忽略本邮件。</p></section><p style="margin:20px 0 0;text-align:center;font-size:12px;color:#718189">MORROBLOG · 个人技术笔记</p></main></body></html>`,
   });
 }
 

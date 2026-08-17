@@ -3,6 +3,7 @@ import type { TrpcContext } from "./_core/context";
 
 const dbMocks = vi.hoisted(() => ({
   getDb: vi.fn(),
+  getCommentById: vi.fn(),
   getPostComments: vi.fn(),
   getCommentReplies: vi.fn(),
 }));
@@ -18,6 +19,7 @@ describe("comments.create", () => {
     const values = vi.fn().mockResolvedValue([{ insertId: 21 }]);
     const fakeDb = { insert: vi.fn(() => ({ values })) };
     dbMocks.getDb.mockResolvedValue(fakeDb);
+    dbMocks.getCommentById.mockResolvedValue({ id: 9, postId: 3 });
     const ctx = {
       user: {
         id: 5,
@@ -48,6 +50,21 @@ describe("comments.create", () => {
       authorId: 5,
       status: "pending",
     }));
+  });
+
+  it("rejects a reply whose parent comment belongs to another post", async () => {
+    const fakeDb = { insert: vi.fn() };
+    dbMocks.getDb.mockResolvedValue(fakeDb);
+    dbMocks.getCommentById.mockResolvedValue({ id: 9, postId: 99 });
+    const ctx = {
+      user: { id: 5, openId: "commenter-5", email: null, name: "Commenter", loginMethod: "manus", role: "user", createdAt: new Date(), updatedAt: new Date(), lastSignedIn: new Date() },
+      req: {},
+      res: {},
+    } as TrpcContext;
+
+    await expect(appRouter.createCaller(ctx).comments.create({ postId: 3, parentCommentId: 9, content: "跨文章回复" }))
+      .rejects.toMatchObject({ code: "BAD_REQUEST" });
+    expect(fakeDb.insert).not.toHaveBeenCalled();
   });
 
   it("returns a nested reply tree while preserving the authenticated viewer id", async () => {

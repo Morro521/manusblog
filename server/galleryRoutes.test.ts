@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { TrpcContext } from "./_core/context";
 
 const dbMocks = vi.hoisted(() => ({
+  getDb: vi.fn(),
   getAllGalleries: vi.fn(),
   getGalleryById: vi.fn(),
   getGalleryImages: vi.fn(),
@@ -14,6 +15,11 @@ import { appRouter } from "./routers";
 const publicContext = { user: null, req: {}, res: {} } as unknown as TrpcContext;
 const userContext = {
   user: { id: 6, openId: "reader-6", email: null, name: "Reader", loginMethod: "manus", role: "user", createdAt: new Date(), updatedAt: new Date(), lastSignedIn: new Date() },
+  req: {},
+  res: {},
+} as unknown as TrpcContext;
+const adminContext = {
+  user: { id: 1, openId: "admin-1", email: null, name: "Admin", loginMethod: "manus", role: "admin", createdAt: new Date(), updatedAt: new Date(), lastSignedIn: new Date() },
   req: {},
   res: {},
 } as unknown as TrpcContext;
@@ -40,5 +46,20 @@ describe("gallery routes", () => {
 
   it("does not expose gallery creation to an ordinary user", async () => {
     await expect(appRouter.createCaller(userContext).galleries.create({ title: "Not allowed" })).rejects.toMatchObject({ code: "FORBIDDEN" });
+  });
+
+  it("allows an admin to update gallery metadata while keeping the operation unavailable to ordinary users", async () => {
+    const where = vi.fn().mockResolvedValue(undefined);
+    const set = vi.fn(() => ({ where }));
+    const update = vi.fn(() => ({ set }));
+    dbMocks.getDb.mockResolvedValue({ update });
+    dbMocks.getGalleryById.mockResolvedValue({ id: 4, title: "Before", description: null });
+
+    await expect(appRouter.createCaller(userContext).galleries.update({ id: 4, title: "Not allowed" })).rejects.toMatchObject({ code: "FORBIDDEN" });
+    await expect(appRouter.createCaller(adminContext).galleries.update({ id: 4, title: "After", description: "Updated notes" })).resolves.toEqual({ success: true });
+
+    expect(dbMocks.getGalleryById).toHaveBeenCalledWith(4);
+    expect(update).toHaveBeenCalled();
+    expect(set).toHaveBeenCalledWith({ title: "After", description: "Updated notes" });
   });
 });

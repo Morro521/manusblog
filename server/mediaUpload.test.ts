@@ -7,6 +7,7 @@ vi.mock("./storage", () => storageMocks);
 import { appRouter } from "./routers";
 
 const now = new Date();
+const pngBase64 = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]).toString("base64");
 const ctx = {
   user: { id: 5, openId: "uploader-5", email: null, name: "Uploader", loginMethod: "manus", role: "user", createdAt: now, updatedAt: now, lastSignedIn: now },
   req: {},
@@ -21,7 +22,7 @@ describe("media.uploadImage", () => {
     const result = await appRouter.createCaller(ctx).media.uploadImage({
       fileName: "night signal.png",
       mimeType: "image/png",
-      base64: Buffer.from("small-image").toString("base64"),
+      base64: pngBase64,
     });
 
     expect(result.url).toBe("/manus-storage/blog/5/images/record.png");
@@ -40,5 +41,27 @@ describe("media.uploadImage", () => {
       base64: oversizedBase64,
     })).rejects.toMatchObject({ code: "PAYLOAD_TOO_LARGE" });
     expect(storageMocks.storagePut).not.toHaveBeenCalled();
+  });
+
+  it("rejects malformed payloads and content whose signature does not match the declared MIME type", async () => {
+    await expect(appRouter.createCaller(ctx).media.uploadImage({
+      fileName: "not-a-png.png",
+      mimeType: "image/png",
+      base64: Buffer.from("not an image").toString("base64"),
+    })).rejects.toMatchObject({ code: "BAD_REQUEST" });
+    await expect(appRouter.createCaller(ctx).media.uploadImage({
+      fileName: "encoded.png",
+      mimeType: "image/png",
+      base64: "%%%not-base64%%%",
+    })).rejects.toMatchObject({ code: "BAD_REQUEST" });
+    expect(storageMocks.storagePut).not.toHaveBeenCalled();
+  });
+
+  it("does not expose uploading to an unauthenticated visitor", async () => {
+    await expect(appRouter.createCaller({ user: null, req: {}, res: {} } as TrpcContext).media.uploadImage({
+      fileName: "night.png",
+      mimeType: "image/png",
+      base64: pngBase64,
+    })).rejects.toMatchObject({ code: "UNAUTHORIZED" });
   });
 });

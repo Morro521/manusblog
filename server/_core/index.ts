@@ -9,6 +9,27 @@ import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
 import { promoteConfiguredInitialAdmin } from "../db";
 
+const REGISTRATION_WINDOW_MS = 60 * 1000;
+const MAX_REGISTRATION_REQUESTS_PER_IP = 8;
+const registrationRequests = new Map<string, { count: number; resetAt: number }>();
+
+function registrationRateLimit(req: express.Request, res: express.Response, next: express.NextFunction) {
+  if (!req.path.includes("auth.requestRegistrationCode")) return next();
+  const now = Date.now();
+  const key = req.socket.remoteAddress ?? "unknown";
+  const current = registrationRequests.get(key);
+  if (!current || current.resetAt <= now) {
+    registrationRequests.set(key, { count: 1, resetAt: now + REGISTRATION_WINDOW_MS });
+    return next();
+  }
+  if (current.count >= MAX_REGISTRATION_REQUESTS_PER_IP) {
+    res.status(429).json({ error: "请求过于频繁，请稍后再试" });
+    return;
+  }
+  current.count += 1;
+  return next();
+}
+
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
     const server = net.createServer();
@@ -32,10 +53,20 @@ async function startServer() {
   await promoteConfiguredInitialAdmin(process.env.INITIAL_ADMIN_EMAIL);
   const app = express();
   const server = createServer(app);
-  // Configure body parser with larger size limit for file uploads
-  app.use(express.json({ limit: "50mb" }));
-  app.use(express.urlencoded({ limit: "50mb", extended: true }));
+  app.disable("x-powered-by");
+  app.use((_req, res, next) => {
+    res.setHeader("X-Content-Type-Options", "nosniff");
+    res.setHeader("X-Frame-Options", "DENY");
+    res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
+    res.setHeader("Permissions-Policy", "camera=(), microphone=(), geolocation=()");
+    res.setHeader("Cross-Origin-Opener-Policy", "same-origin");
+    next();
+  });
+  // Base64 uploads are subsequently limited to 5 MB by the media route.
+  app.use(express.json({ limit: "10mb" }));
+  app.use(express.urlencoded({ limit: "100kb", extended: true }));
   registerStorageProxy(app);
+  app.use("/api/trpc", registrationRateLimit);
   // tRPC API
   app.use(
     "/api/trpc",

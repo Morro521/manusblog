@@ -10,6 +10,7 @@ import { posts, comments, tags, categories, postTags, galleries, images, InsertP
 import { eq, desc, inArray } from "drizzle-orm";
 import { storagePut } from "./storage";
 import { LocalAuthError, loginWithEmail, registerWithEmail, requestRegistrationCode } from "./localAuth";
+import { getHitokotoQuote } from "./hitokoto";
 
 function safeUser<T extends { passwordHash?: string | null } | null>(user: T) {
   if (!user) return null;
@@ -22,6 +23,22 @@ function authError(error: unknown): never {
   console.error("[LocalAuth] Unexpected error", error);
   throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "认证服务暂时不可用" });
 }
+
+const IMAGE_SIGNATURES: Record<string, (bytes: Buffer) => boolean> = {
+  "image/jpeg": (bytes) => bytes.length >= 3 && bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff,
+  "image/png": (bytes) => bytes.length >= 8 && bytes.subarray(0, 8).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a])),
+  "image/gif": (bytes) => bytes.length >= 6 && ["GIF87a", "GIF89a"].includes(bytes.subarray(0, 6).toString("ascii")),
+  "image/webp": (bytes) => bytes.length >= 12 && bytes.subarray(0, 4).toString("ascii") === "RIFF" && bytes.subarray(8, 12).toString("ascii") === "WEBP",
+  "image/avif": (bytes) => bytes.length >= 16 && bytes.subarray(4, 8).toString("ascii") === "ftyp" && ["avif", "avis"].includes(bytes.subarray(8, 12).toString("ascii")),
+};
+
+const IMAGE_EXTENSIONS: Record<string, string> = {
+  "image/jpeg": "jpg",
+  "image/png": "png",
+  "image/webp": "webp",
+  "image/gif": "gif",
+  "image/avif": "avif",
+};
 
 export const appRouter = router({
   system: systemRouter,
@@ -73,6 +90,10 @@ export const appRouter = router({
         success: true,
       } as const;
     }),
+  }),
+
+  quote: router({
+    current: publicProcedure.query(() => getHitokotoQuote()),
   }),
 
   // ============ 文章路由 ============
@@ -325,6 +346,13 @@ export const appRouter = router({
         const dbInstance = await getDb();
         if (!dbInstance) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
 
+        if (input.parentCommentId) {
+          const parentComment = await db.getCommentById(input.parentCommentId);
+          if (!parentComment || parentComment.postId !== input.postId) {
+            throw new TRPCError({ code: "BAD_REQUEST", message: "回复的目标评论不存在或不属于这篇文章" });
+          }
+        }
+
         const newComment: InsertComment = {
           ...input,
           authorId: ctx.user.id,
@@ -362,17 +390,25 @@ export const appRouter = router({
       }))
       .mutation(async ({ input, ctx }) => {
         const normalizedBase64 = input.base64.replace(/^data:image\/[a-zA-Z0-9+.-]+;base64,/, "");
+        if (!/^[A-Za-z0-9+/]+={0,2}$/.test(normalizedBase64) || normalizedBase64.length % 4 !== 0) {
+          throw new TRPCError({ code: "BAD_REQUEST", message: "图片编码无效" });
+        }
         const bytes = Buffer.from(normalizedBase64, "base64");
         const maxBytes = 5 * 1024 * 1024;
         if (bytes.length === 0 || bytes.length > maxBytes) {
           throw new TRPCError({ code: "PAYLOAD_TOO_LARGE", message: "图片必须小于 5MB" });
         }
 
-        const sanitizedName = input.fileName
+        if (!IMAGE_SIGNATURES[input.mimeType](bytes)) {
+          throw new TRPCError({ code: "BAD_REQUEST", message: "图片内容与声明的格式不匹配" });
+        }
+
+        const sanitizedStem = input.fileName
           .replace(/[^a-zA-Z0-9._-]/g, "-")
           .replace(/-+/g, "-")
-          .slice(0, 96) || "image";
-        const objectKey = `blog/${ctx.user.id}/images/${Date.now()}-${crypto.randomUUID()}-${sanitizedName}`;
+          .replace(/\.[^.]+$/, "")
+          .slice(0, 80) || "image";
+        const objectKey = `blog/${ctx.user.id}/images/${Date.now()}-${crypto.randomUUID()}-${sanitizedStem}.${IMAGE_EXTENSIONS[input.mimeType]}`;
         const { key, url } = await storagePut(objectKey, bytes, input.mimeType);
         return { key, url };
       }),
@@ -457,6 +493,24 @@ export const appRouter = router({
         const newGallery: InsertGallery = input;
         const result = await dbInstance.insert(galleries).values(newGallery);
         return { id: result[0].insertId, ...newGallery };
+      }),
+
+    update: adminProcedure
+      .input(z.object({
+        id: z.number(),
+        title: z.string().min(1),
+        description: z.string().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const dbInstance = await getDb();
+        if (!dbInstance) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        const gallery = await db.getGalleryById(input.id);
+        if (!gallery) throw new TRPCError({ code: "NOT_FOUND" });
+        await dbInstance.update(galleries).set({
+          title: input.title,
+          description: input.description?.trim() || null,
+        }).where(eq(galleries.id, input.id));
+        return { success: true };
       }),
 
     addImage: adminProcedure
